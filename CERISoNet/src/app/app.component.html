@@ -5,7 +5,7 @@
 <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
 <!-- * * * * * * * * * Delete the template below * * * * * * * * * -->
 <!-- * * * * * * * to get started with your project! * * * * * * * -->
-<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
+<!-- * * * * * * * * * * * * * * * * * * * * * * * (ngSubmit)="onSubmit()" [formGroup] ="loginForm"* * * * * * * * -->
 
 
 <main class="main">
@@ -24,7 +24,7 @@
                     <p class="text-secondary">Accédez à votre compte</p>
                 </div>
                 
-                <form (ngSubmit)="onSubmit()" [formGroup] ="loginForm">
+                <form>
                     <div class="input-group mb-3">
                         <span class="input-group-text">
                             <i class='bx bx-user'></i>
