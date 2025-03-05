@@ -24,6 +24,9 @@ const pool = new pg.Pool({
 // Instance de l'application Express
 const app = express();
 
+// Middlware pour les fichiers statiques
+app.use(express.static(path.join(__dirname, 'CERISoNet/dist/ceriso-net/browser')));
+
 // Configuration du serveur HTTPS.
 const options = {
     pfx: fs.readFileSync(path.join(__dirname, 'certificat.pfx')),
