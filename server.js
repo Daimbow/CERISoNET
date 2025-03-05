@@ -24,9 +24,6 @@ const pool = new pg.Pool({
 // Instance de l'application Express
 const app = express();
 
-// Middlware pour les fichiers statiques
-app.use(express.static(path.join(__dirname, 'public_html')));
-
 // Configuration du serveur HTTPS.
 const options = {
     pfx: fs.readFileSync(path.join(__dirname, 'certificat.pfx')),
