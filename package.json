@@ -1,7 +1,20 @@
 {
-  "dependencies": {
-    "@angular/cli": "^17.3.12",
-    "express": "^4.21.2",
-    "pg": "^8.13.3"
+    "name": "cerisonet",
+    "version": "1.0.0",
+    "main": "index.js",
+    "dependencies": {
+      "@angular/cli": "^17.3.12",
+      "express": "^4.21.2",
+      "pg": "^8.13.3"
+    },
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "start": "node server.js"
+    },
+    "type": "module",
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": ""
   }
-}
+  
