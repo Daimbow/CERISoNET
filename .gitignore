@@ -1,0 +1,15 @@
+# Ignorer les dossiers de dépendances
+node_modules/
+
+# Ignorer le fichier package-lock.json 
+package-lock.json
+
+# Ignorer les fichiers de build générés (Angular build, dist, etc.)
+dist/
+build/
+
+# Ignorer les logs
+*.log
+
+# Ignorer les fichiers générés par les tests
+coverage/
