@@ -1,10 +1,12 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { NgbAlertModule } from '@ng-bootstrap/ng-bootstrap';
+import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [ReactiveFormsModule], 
+  imports: [CommonModule, NgbAlertModule, RouterModule, ReactiveFormsModule],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
