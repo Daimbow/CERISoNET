@@ -56,7 +56,7 @@ app.post('/login', async (req, res) => {
 
     try{
         const result = await pool.query(
-            'SELECT * FROM fredouil.users WHERE identifiant = $1 AND motpasse = $2',
+            'SELECT * FROM fredouil.compte WHERE identifiant = $1 AND motpasse = $2',
             [username, password]
         );
 
