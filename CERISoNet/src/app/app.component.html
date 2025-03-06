@@ -8,10 +8,52 @@
 <!-- * * * * * * * * * * * * * * * * * * * * * * * (ngSubmit)="onSubmit()" [formGroup] ="loginForm"* * * * * * * * -->
 
 <main class="main">
-    <div *ngFor="let type of alertTypes" class="alert" [ngClass]="'alert-' + type" role="alert">
-      A simple {{ type }} alert—check it out!
-    </div>
-  </main>
+    <main class="main">
+        <div class="row vh-100 g-0">      
+          <!-- Section pour l'image de fond sur grands écrans -->
+          <div class="col-lg-6 position-relative d-none d-lg-block">
+            <div
+              class="bg-holder"
+              style="background-image: url('assets/images/mountains-8314422_1280.png'); height: 100%; background-size: cover;">
+            </div>
+          </div>
+      
+          <!-- Section pour le formulaire de connexion -->
+          <div class="col-lg-6 col-12 d-flex justify-content-center align-items-center">
+            <div class="text-center">
+              <a href="#" class="d-flex justify-content-center mb-4">
+                <img src="assets/images/logo.png" alt="Logo" width="150">
+              </a>
+      
+              <div>
+                <h3 class="fw-bold">Connectez-vous</h3>
+                <p class="text-secondary">Accédez à votre compte</p>
+              </div>
+      
+              <!-- Formulaire de connexion -->
+              <form (ngSubmit)="onSubmit()" [formGroup]="loginForm">
+                <div class="input-group mb-3">
+                  <span class="input-group-text">
+                    <i class="bx bx-user"></i>
+                  </span>
+                  <input type="text" class="form-control form-control-lg fs-6" placeholder="Nom d'utilisateur" aria-label="Nom d'utilisateur" formControlName="username" required>
+                </div>
+      
+                <div class="input-group mb-3">
+                  <span class="input-group-text">
+                    <i class="bx bx-lock-alt"></i>
+                  </span>
+                  <input type="password" class="form-control form-control-lg fs-6" placeholder="Mot de passe" aria-label="Mot de passe" formControlName="password" required>
+                </div>
+      
+                <button class="btn btn-primary btn-lg w-100" type="submit">Se connecter</button>
+              </form> 
+            </div>
+          </div>
+        </div>
+      </main>
+      <router-outlet></router-outlet>
+      
   
   
   <router-outlet />
