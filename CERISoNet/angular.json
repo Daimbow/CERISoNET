@@ -84,14 +84,21 @@
               "src/favicon.ico",
               "src/assets"
             ],
-            "styles": [
-                "node_modules/bootstrap/dist/css/bootstrap.min.css",
-                "node_modules/boxicons/css/boxicons.min.css",
-                "src/styles.css"
-              ],
-              "scripts": [
-                "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
-              ]
+            "styles" : [
+
+            "node_modules/bootstrap/scss/bootstrap.scss",
+
+            "node_modules/bootstrap-icons/font/bootstrap-icons.css",
+
+            "src/styles.scss"
+
+            ],
+
+            "scripts" : [
+
+            "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
+
+            ]
           }
         }
       }

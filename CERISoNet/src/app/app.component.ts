@@ -1,30 +1,15 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { ReactiveFormsModule } from '@angular/forms';
+import { NgbAlertModule } from '@ng-bootstrap/ng-bootstrap'; // Import du module alert
+import { CommonModule } from '@angular/common'; // Import de CommonModule pour les directives Angular
 
 @Component({
   selector: 'app-root',
-    standalone: true,
-    imports: [RouterOutlet, ReactiveFormsModule],
-    templateUrl: './app.component.html',
-    styleUrl: './app.component.css'
-  })
+  standalone: true,
+  imports: [CommonModule, NgbAlertModule], // Ajout du module ng-bootstrap et CommonModule
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.scss']
+})
 export class AppComponent {
-    loginForm: FormGroup;
-
-    constructor(private fb: FormBuilder) {
-        this.loginForm = this.fb.group({
-            username: ['', Validators.required],
-            password: ['', Validators.required]
-        });
-    }
-
-    onSubmit() {
-        if (this.loginForm.valid) {
-            console.log(this.loginForm.value);
-        } else {
-            console.log("Formulaire non valide.");
-        }
-    }
+  // Liste des types d'alertes à afficher
+  alertTypes = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark'];
 }
