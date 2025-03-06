@@ -8,11 +8,11 @@
 <!-- * * * * * * * * * * * * * * * * * * * * * * * (ngSubmit)="onSubmit()" [formGroup] ="loginForm"* * * * * * * * -->
 
 <main class="main">
-    <!-- Alertes avec ng-bootstrap -->
-    <ngb-alert *ngFor="let type of alertTypes" [type]="type" [dismissible]="true">
+    <div *ngFor="let type of alertTypes" class="alert" [ngClass]="'alert-' + type" role="alert">
       A simple {{ type }} alert—check it out!
-    </ngb-alert>
+    </div>
   </main>
+  
   
   <router-outlet />
   
