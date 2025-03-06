@@ -22,8 +22,7 @@ export class AppComponent {
     });
   }
 
-  async onSubmit(event: Event) {
-    event.preventDefault();  
+  async onSubmit() {
 
     if (this.loginForm.valid) {
       const formData = this.loginForm.value;
