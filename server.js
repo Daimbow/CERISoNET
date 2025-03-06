@@ -1,16 +1,14 @@
-
 // JULIEN JAMME ILSEN
 
 import express from 'express';
+import session from 'express-session';
 import fs from 'fs';
 import https from 'https';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import pg from 'pg'; 
+import mongoose from 'mongoose'
 import MongoDBStore from 'connect-mongodb-session';
-import mongoose from 'mongoose';
-import session from 'express-session';
-
 
 // Chemins des fichiers et dossiers
 const __filename = fileURLToPath(import.meta.url);
@@ -31,11 +29,10 @@ const app = express();
 const MONGO_URI = 'mongodb://pedago01c.univ-avignon.fr:27017/db-CERI';
 
 
-mongoose.connect(MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}).then(() => console.log('Connecté à MongoDB pour les sessions'))
+mongoose.connect(MONGO_URI)
+  .then(() => console.log('Connecté à MongoDB pour les sessions'))
   .catch(err => console.error('Erreur MongoDB:', err));
+
 
 // Création du store MongoDB pour stocker les sessions
 const MongoDBSessionStore = MongoDBStore(session);
@@ -95,7 +92,8 @@ app.post('/login', async (req, res) => {
         );
 
         if(result.rowCount > 0){
-            req.session.userId = result.rows[0].mail;
+            console.log(result.rows[0].mail);
+	    req.session.userId = result.rows[0].mail;
             req.session.username = result.rows[0].motpasse;
         
             res.status(200).json({
