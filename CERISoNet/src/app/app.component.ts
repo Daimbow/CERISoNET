@@ -1,10 +1,9 @@
-import { Component, OnInit, ElementRef, ViewChild} from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgbAlertModule, NgbToastModule } from '@ng-bootstrap/ng-bootstrap';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http';
-
 
 @Component({
   selector: 'app-root',
@@ -14,33 +13,11 @@ import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http'
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-    showToast: boolean = false;
-    toastMessage: string = '';
-    toastType: string = '';
-
-    getToastClass(): string {
-        switch (this.toastType) {
-          case 'success':
-            return 'text-bg-success'; 
-          case 'error':
-            return 'text-bg-danger'; 
-          default:
-            return '';
-        }
-      }
-
-    showToastMessage(message: string, type: string): void {
-        this.toastMessage = message;
-        this.toastType = type;
-        this.showToast = true;
-    
-        setTimeout(() => {
-          this.showToast = false;
-        }, 3000);  
-      }
-
-
   loginForm: FormGroup;
+  showToast: boolean = false;
+  toastMessage: string = '';
+  toastType: string = '';
+  toastHeader: string = 'Notification';
 
   constructor(private fb: FormBuilder, private http: HttpClient) {
     this.loginForm = this.fb.group({
@@ -49,22 +26,34 @@ export class AppComponent {
     });
   }
 
+  getToastClass(): string {
+    switch (this.toastType) {
+      case 'success':
+        return 'text-bg-success';
+      case 'error':
+        return 'text-bg-danger';
+      default:
+        return 'text-bg-info';
+    }
+  }
+
+  showToastMessage(message: string, type: string): void {
+    this.toastMessage = message;
+    this.toastType = type;
+    this.showToast = true;
+  }
 
   async onSubmit() {
     if (this.loginForm.valid) {
       const formData = this.loginForm.value;
-
-      // Création des en-têtes pour la requête
       const headers = new HttpHeaders().set('Content-Type', 'application/json');
 
       try {
         const response = await this.http.post('https://pedago.univ-avignon.fr:3223/login', formData, { headers }).toPromise();
         console.log('Réponse du serveur:', response);
-
         this.showToastMessage('Connexion réussie!', 'success');
       } catch (error) {
         console.error('Erreur:', error);
-
         this.showToastMessage('Erreur lors de la connexion. Vérifiez vos informations et réessayez.', 'error');
       }
     } else {
