@@ -1,19 +1,13 @@
 <main class="main">
-        <!-- Toast Notification -->
-        <!-- Toast Container -->
-        <!-- Toast Container -->
-        <div class="toast-container position-fixed top-0 start-0 p-4">
-            <div *ngIf="showToast" class="toast rounded-3 shadow-sm p-3" [ngClass]="getToastClass()">
-                <div class="d-flex justify-content-between">
-                    <span><strong>{{ toastHeader }}</strong></span>
-                    <button type="button" class="btn-close btn-close-white" (click)="showToast = false"></button>
-                </div>
-                <p>{{ toastMessage }}</p>
+        <!-- Bandeau de notification -->
+        <div *ngIf="showNotification" [ngClass]="notificationClass" class="notification-banner">
+            <div class="notification-content">
+                <strong>{{ notificationTitle }}</strong>
+                <p>{{ notificationMessage }}</p>
             </div>
         </div>
 
 
-        
     <div class="row vh-100 g-0">
         <div class="col-lg-6 position-relative d-none d-lg-block">
             <div class="bg-holder" style="background-image: url('assets/images/mountains-8314422_1280.png'); height: 100%; background-size: cover;"></div>
@@ -46,4 +40,5 @@
             </div>
         </div>
     </div>
+
 </main>

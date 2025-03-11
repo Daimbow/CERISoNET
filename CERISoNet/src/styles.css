@@ -35,30 +35,67 @@ body{
     color: #999;
 }
 
-.toast {
-    position: relative;
-    max-width: 300px;
-    font-size: 0.875rem;
-    background-color: #f8d7da;  /* Pour un message d'erreur */
-    color: #721c24;
-    border-radius: 20px;  /* Coins arrondis */
-    opacity: 0.9;
-    transition: opacity 0.3s ease;
-}
-
-.toast.success {
-    background-color: #d4edda;
+/* Style du bandeau de notification */
+.notification-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 15px;
+    z-index: 9999;  /* Au-dessus de tous les autres éléments */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: transform 0.3s ease;
+  }
+  
+  /* Bandeau de notification - succès */
+  .notification-banner.success {
+    background-color: #d4edda;  /* Vert clair */
     color: #155724;
-}
-
-.toast.error {
-    background-color: #f8d7da;
+  }
+  
+  /* Bandeau de notification - erreur */
+  .notification-banner.error {
+    background-color: #f8d7da;  /* Rouge pâle */
     color: #721c24;
-}
-
-.toast.info {
-    background-color: #d1ecf1;
+  }
+  
+  /* Bandeau de notification - information */
+  .notification-banner.info {
+    background-color: #d1ecf1;  /* Bleu clair */
     color: #0c5460;
-}
-
+  }
+  
+  /* Contenu du bandeau */
+  .notification-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  /* Titre du message */
+  .notification-content strong {
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+  }
+  
+  /* Message */
+  .notification-content p {
+    font-size: 1rem;
+    margin: 0;
+  }
+  
+  /* Transition d'apparition du bandeau */
+  .notification-banner {
+    transform: translateY(-100%);
+  }
+  
+  .notification-banner.ng-enter {
+    transform: translateY(0);
+  }
+  
+  .notification-banner.ng-leave {
+    transform: translateY(-100%);
+  }
   

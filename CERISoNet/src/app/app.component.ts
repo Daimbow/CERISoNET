@@ -41,6 +41,10 @@ export class AppComponent {
     this.toastMessage = message;
     this.toastType = type;
     this.showToast = true;
+  
+    setTimeout(() => {
+      this.showToast = false;
+    }, 7000);
   }
 
   async onSubmit() {
