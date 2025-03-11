@@ -4,8 +4,11 @@
             <div class="notification-content">
                 <strong>{{ notificationTitle }}</strong>
                 <p>{{ notificationMessage }}</p>
+                <p *ngIf="lastLogin" class="last-login">{{ lastLogin }}</p>
             </div>
         </div>
+        
+        
 
 
     <div class="row vh-100 g-0">

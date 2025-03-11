@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgbToastModule } from '@ng-bootstrap/ng-bootstrap';
 import { RouterModule } from '@angular/router';
@@ -12,8 +12,9 @@ import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http'
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   loginForm: FormGroup;
+  lastLogin: string | null = null;
   
   // Variables pour les notifications
   showNotification: boolean = false;
@@ -28,6 +29,25 @@ export class AppComponent {
     });
   }
 
+  ngOnInit(): void {
+    this.loadLastLogin();
+  }
+
+  // Récupérer la dernière connexion depuis le Local Storage
+  loadLastLogin(): void {
+    const storedDate = localStorage.getItem('lastLogin');
+    if (storedDate) {
+      this.lastLogin = `Dernière connexion : ${storedDate}`;
+    }
+  }
+
+  // Enregistrer la dernière connexion dans le Local Storage
+  saveLastLogin(): void {
+    const now = new Date().toLocaleString(); // Date et heure actuelles
+    localStorage.setItem('lastLogin', now);
+    this.lastLogin = `Dernière connexion : ${now}`;
+  }
+
   // Afficher un message de notification
   showNotificationMessage(message: string, type: string): void {
     this.notificationMessage = message;
@@ -40,7 +60,6 @@ export class AppComponent {
       this.showNotification = false;
     }, 7000);
   }
-  
 
   async onSubmit() {
     if (this.loginForm.valid) {
@@ -50,6 +69,8 @@ export class AppComponent {
       try {
         const response = await this.http.post('https://pedago.univ-avignon.fr:3223/login', formData, { headers }).toPromise();
         console.log('Réponse du serveur:', response);
+
+        this.saveLastLogin(); 
         this.showNotificationMessage('Connexion réussie!', 'success');
       } catch (error) {
         console.error('Erreur:', error);
