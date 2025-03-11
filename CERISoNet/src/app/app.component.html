@@ -1,4 +1,13 @@
 <main class="main">
+        <!-- Toast Notification -->
+        <ngb-toast *ngIf="showToast" [class]="getToastClass()" (hidden)="showToast = false">
+            <ng-template ngbToastHeader>
+                <strong class="me-auto">{{ toastHeader }}</strong>
+                <small class="text-muted">Just now</small>
+            </ng-template>
+            <div>{{ toastMessage }}</div>
+        </ngb-toast>
+        
     <div class="row vh-100 g-0">
         <div class="col-lg-6 position-relative d-none d-lg-block">
             <div class="bg-holder" style="background-image: url('assets/images/mountains-8314422_1280.png'); height: 100%; background-size: cover;"></div>
@@ -28,18 +37,6 @@
 
                     <button class="btn btn-primary btn-lg w-100" type="submit">Se connecter</button>
                 </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toast Container -->
-    <div *ngIf="showToast" class="toast-container top-0 start-0 p-4">
-        <div class="toast" [ngClass]="getToastClass()" id="toastAlert">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <strong>{{ toastHeader }}</strong>
-                    {{ toastMessage }}
-                </div>
             </div>
         </div>
     </div>
