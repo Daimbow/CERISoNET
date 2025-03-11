@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NgbAlertModule, NgbToastModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbToastModule } from '@ng-bootstrap/ng-bootstrap';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http';
@@ -8,7 +8,7 @@ import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http'
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, NgbAlertModule, RouterModule, ReactiveFormsModule, HttpClientModule, NgbToastModule ],
+  imports: [CommonModule, NgbToastModule, RouterModule, ReactiveFormsModule, HttpClientModule],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
@@ -29,11 +29,11 @@ export class AppComponent {
   getToastClass(): string {
     switch (this.toastType) {
       case 'success':
-        return 'text-bg-success';
+        return 'bg-success text-light';
       case 'error':
-        return 'text-bg-danger';
+        return 'bg-danger text-light';
       default:
-        return 'text-bg-info';
+        return 'bg-info text-light';
     }
   }
 
