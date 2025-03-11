@@ -35,46 +35,36 @@ body{
     color: #999;
 }
 
-/* Bandeau de notification */
 .notification-banner {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999; /* S'assurer que la notification soit au-dessus des autres éléments */
+    width: 90%;
+    max-width: 500px;
     padding: 15px;
-    z-index: 9999;
+    border-radius: 5px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: opacity 0.3s ease;
-    opacity: 0;
+    background-color: #28a745; /* Par défaut success */
+    color: white;
   }
   
-  /* Success notification */
-  .notification-banner.success {
-    background-color: #d4edda;
-    color: #155724;
-  }
-  
-  /* Error notification */
   .notification-banner.error {
-    background-color: #f8d7da;
-    color: #721c24;
+    background-color: #dc3545; /* Erreur */
   }
   
-  /* Info notification */
-  .notification-banner.info {
-    background-color: #d1ecf1;
-    color: #0c5460;
+  .notification-banner.success {
+    background-color: #28a745; /* Succès */
   }
   
-  /* Lorsque la notification est visible */
-  .notification-banner.ng-enter {
-    opacity: 1;
+  .notification-content {
+    font-size: 16px;
   }
   
-  /* Lorsque la notification disparaît */
-  .notification-banner.ng-leave {
-    opacity: 0;
+  .notification-banner p {
+    margin: 0;
   }
   

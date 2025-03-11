@@ -31,15 +31,18 @@ export class AppComponent {
   // Afficher un message de notification
   showNotificationMessage(message: string, type: string): void {
     this.notificationMessage = message;
-    this.notificationTitle = type === 'success' ? 'Succès' : 'Erreur';  
-    this.notificationClass = type === 'success' ? 'success' : 'error';  
-
+    this.notificationTitle = type === 'success' ? 'Succès' : 'Erreur';
+    this.notificationClass = type === 'success' ? 'success' : 'error';
+  
+    console.log('Notification affichée:', message, type); // Ajouter un log pour déboguer
+  
     this.showNotification = true;
-
+  
     setTimeout(() => {
       this.showNotification = false;
     }, 7000);
   }
+  
 
   async onSubmit() {
     if (this.loginForm.valid) {
