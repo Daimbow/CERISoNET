@@ -1,12 +1,21 @@
 <main class="main">
         <!-- Toast Notification -->
-        <ngb-toast *ngIf="showToast" [class]="getToastClass()" (hidden)="showToast = false">
-            <ng-template ngbToastHeader>
-                <strong class="me-auto">{{ toastHeader }}</strong>
-                <small class="text-muted">Just now</small>
-            </ng-template>
-            <div>{{ toastMessage }}</div>
-        </ngb-toast>
+        <!-- Toast Container -->
+        <div class="toast-container top-0 start-0 p-4">
+            <ngb-toast *ngIf="showToast" [class]="getToastClass()" (hidden)="showToast = false">
+                <ng-template ngbToastHeader>
+                    <strong class="me-auto">{{ toastHeader }}</strong>
+                    <small class="text-muted">Just now</small>
+                </ng-template>
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <strong>{{ toastHeader }}</strong>
+                        <p>{{ toastMessage }}</p>
+                    </div>
+                </div>
+            </ngb-toast>
+        </div>
+
         
     <div class="row vh-100 g-0">
         <div class="col-lg-6 position-relative d-none d-lg-block">
