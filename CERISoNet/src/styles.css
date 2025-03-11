@@ -35,29 +35,30 @@ body{
     color: #999;
 }
 
-.toast-container {
-    position: fixed;
-    top: 0; 
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1050;
-    width: 100%; 
-    pointer-events: none; 
-  }
-  
-  .toast {
-    pointer-events: auto; 
-    font-size: 1rem;
-    border-radius: 5px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-  
-  .toast-body {
-    height: 100vh; 
-    display: flex;
-    align-items: center; 
-    justify-content: center;
-    text-align: center; 
-    padding: 15px; 
-  }
+.toast {
+    position: relative;
+    max-width: 300px;
+    font-size: 0.875rem;
+    background-color: #f8d7da;  /* Pour un message d'erreur */
+    color: #721c24;
+    border-radius: 20px;  /* Coins arrondis */
+    opacity: 0.9;
+    transition: opacity 0.3s ease;
+}
+
+.toast.success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.toast.error {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.toast.info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
   
