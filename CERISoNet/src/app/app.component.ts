@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NgbToastModule } from '@ng-bootstrap/ng-bootstrap';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http';
@@ -8,7 +7,7 @@ import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http'
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, NgbToastModule, RouterModule, ReactiveFormsModule, HttpClientModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, HttpClientModule],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
@@ -29,11 +28,11 @@ export class AppComponent {
   getToastClass(): string {
     switch (this.toastType) {
       case 'success':
-        return 'bg-success text-light';
+        return 'text-bg-success border-0';
       case 'error':
-        return 'bg-danger text-light';
+        return 'text-bg-danger border-0';
       default:
-        return 'bg-info text-light';
+        return 'text-bg-info border-0';
     }
   }
 
@@ -41,6 +40,11 @@ export class AppComponent {
     this.toastMessage = message;
     this.toastType = type;
     this.showToast = true;
+
+    // Hide the toast after 3 seconds
+    setTimeout(() => {
+      this.showToast = false;
+    }, 3000); // 3000 ms = 3 seconds
   }
 
   async onSubmit() {

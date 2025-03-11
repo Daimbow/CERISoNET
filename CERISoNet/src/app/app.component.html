@@ -32,12 +32,15 @@
         </div>
     </div>
 
-    <!-- Toast Notification -->
-    <ngb-toast *ngIf="showToast" [class]="getToastClass()" (hidden)="showToast = false">
-        <ng-template ngbToastHeader>
-            <strong class="me-auto">{{ toastHeader }}</strong>
-            <small class="text-muted">Just now</small>
-        </ng-template>
-        <div>{{ toastMessage }}</div>
-    </ngb-toast>
+    <!-- Toast Container -->
+    <div *ngIf="showToast" class="toast-container top-0 start-0 p-4">
+        <div class="toast" [ngClass]="getToastClass()" id="toastAlert">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <strong>{{ toastHeader }}</strong>
+                    {{ toastMessage }}
+                </div>
+            </div>
+        </div>
+    </div>
 </main>
