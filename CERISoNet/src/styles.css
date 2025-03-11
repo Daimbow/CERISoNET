@@ -35,67 +35,46 @@ body{
     color: #999;
 }
 
-/* Style du bandeau de notification */
+/* Bandeau de notification */
 .notification-banner {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     padding: 15px;
-    z-index: 9999;  /* Au-dessus de tous les autres éléments */
+    z-index: 9999;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: transform 0.3s ease;
+    transition: opacity 0.3s ease;
+    opacity: 0;
   }
   
-  /* Bandeau de notification - succès */
+  /* Success notification */
   .notification-banner.success {
-    background-color: #d4edda;  /* Vert clair */
+    background-color: #d4edda;
     color: #155724;
   }
   
-  /* Bandeau de notification - erreur */
+  /* Error notification */
   .notification-banner.error {
-    background-color: #f8d7da;  /* Rouge pâle */
+    background-color: #f8d7da;
     color: #721c24;
   }
   
-  /* Bandeau de notification - information */
+  /* Info notification */
   .notification-banner.info {
-    background-color: #d1ecf1;  /* Bleu clair */
+    background-color: #d1ecf1;
     color: #0c5460;
   }
   
-  /* Contenu du bandeau */
-  .notification-content {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-  
-  /* Titre du message */
-  .notification-content strong {
-    font-size: 1.1rem;
-    margin-bottom: 5px;
-  }
-  
-  /* Message */
-  .notification-content p {
-    font-size: 1rem;
-    margin: 0;
-  }
-  
-  /* Transition d'apparition du bandeau */
-  .notification-banner {
-    transform: translateY(-100%);
-  }
-  
+  /* Lorsque la notification est visible */
   .notification-banner.ng-enter {
-    transform: translateY(0);
+    opacity: 1;
   }
   
+  /* Lorsque la notification disparaît */
   .notification-banner.ng-leave {
-    transform: translateY(-100%);
+    opacity: 0;
   }
   

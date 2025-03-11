@@ -14,10 +14,12 @@ import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http'
 })
 export class AppComponent {
   loginForm: FormGroup;
-  showToast: boolean = false;
-  toastMessage: string = '';
-  toastType: string = '';
-  toastHeader: string = 'Notification';
+  
+  // Variables pour les notifications
+  showNotification: boolean = false;
+  notificationClass: string = '';
+  notificationTitle: string = '';
+  notificationMessage: string = '';
 
   constructor(private fb: FormBuilder, private http: HttpClient) {
     this.loginForm = this.fb.group({
@@ -26,24 +28,16 @@ export class AppComponent {
     });
   }
 
-  getToastClass(): string {
-    switch (this.toastType) {
-      case 'success':
-        return 'bg-success text-light';
-      case 'error':
-        return 'bg-danger text-light';
-      default:
-        return 'bg-info text-light';
-    }
-  }
+  // Afficher un message de notification
+  showNotificationMessage(message: string, type: string): void {
+    this.notificationMessage = message;
+    this.notificationTitle = type === 'success' ? 'Succès' : 'Erreur';  
+    this.notificationClass = type === 'success' ? 'success' : 'error';  
 
-  showToastMessage(message: string, type: string): void {
-    this.toastMessage = message;
-    this.toastType = type;
-    this.showToast = true;
-  
+    this.showNotification = true;
+
     setTimeout(() => {
-      this.showToast = false;
+      this.showNotification = false;
     }, 7000);
   }
 
@@ -55,14 +49,14 @@ export class AppComponent {
       try {
         const response = await this.http.post('https://pedago.univ-avignon.fr:3223/login', formData, { headers }).toPromise();
         console.log('Réponse du serveur:', response);
-        this.showToastMessage('Connexion réussie!', 'success');
+        this.showNotificationMessage('Connexion réussie!', 'success');
       } catch (error) {
         console.error('Erreur:', error);
-        this.showToastMessage('Erreur lors de la connexion. Vérifiez vos informations et réessayez.', 'error');
+        this.showNotificationMessage('Erreur lors de la connexion. Vérifiez vos informations et réessayez.', 'error');
       }
     } else {
       console.log('Le formulaire est invalide');
       alert('Le formulaire est invalide. Assurez-vous que tous les champs sont correctement remplis.');
     }
-  }
+  } 
 }
