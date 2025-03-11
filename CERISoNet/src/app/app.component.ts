@@ -34,8 +34,6 @@ export class AppComponent {
     this.notificationTitle = type === 'success' ? 'Succès' : 'Erreur';
     this.notificationClass = type === 'success' ? 'success' : 'error';
   
-    console.log('Notification affichée:', message, type); // Ajouter un log pour déboguer
-  
     this.showNotification = true;
   
     setTimeout(() => {
