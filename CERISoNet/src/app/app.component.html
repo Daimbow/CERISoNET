@@ -4,7 +4,7 @@
 <!-- * * * * * * * * * * and can be replaced.  * * * * * * * * * * -->
 <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
 <!-- * * * * * * * * * Delete the template below * * * * * * * * * -->
-<!-- * * * * * * * to get started with your project! * * * * * * * -->
+<!-- * * * * * * * to get started with your project! * * * * * *ngFor="response$ | async"* * -->
 <!-- * * * * * * * * * * * * * * * * * * * * * * * (ngSubmit)="onSubmit()" [formGroup] ="loginForm"* * * * * * * * -->
 
 <main class="main">
@@ -30,6 +30,17 @@
                 <p class="text-secondary">Accédez à votre compte</p>
               </div>
       
+            <!-- Notification -->
+            <div class="toast-container top-0 start-0 p-4">
+                <div *ngIf="showToast" class="toast" [ngClass]="getToastClass()">
+                  <div class="d-flex">
+                    <div class="toast-body">
+                      <strong>{{ toastMessage }}</strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <!-- Formulaire de connexion -->
               <form (ngSubmit)="onSubmit()" [formGroup]="loginForm">
                 <div class="input-group mb-3">
