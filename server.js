@@ -9,6 +9,8 @@ import { fileURLToPath } from 'url';
 import pg from 'pg'; 
 import mongoose from 'mongoose'
 import MongoDBStore from 'connect-mongodb-session';
+import crypto from 'crypto';
+
 
 // Chemins des fichiers et dossiers
 const __filename = fileURLToPath(import.meta.url);
@@ -81,21 +83,24 @@ app.use(express.json());
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
-    if(!username || !password){
-        return res.status(400).send({message: "Veuillez fournir un nom d'utilisateur et un mot de passe."});
+    if (!username || !password) {
+        return res.status(400).send({ message: "Veuillez fournir un nom d'utilisateur et un mot de passe." });
     }
 
-    try{
+    // Hash du mot de passe en SHA-1
+    const hashedPassword = crypto.createHash('sha1').update(password).digest('hex');
+
+    try {
         const result = await pool.query(
             'SELECT * FROM fredouil.compte WHERE mail = $1 AND motpasse = $2',
-            [username, password]
+            [username, hashedPassword]
         );
 
-        if(result.rowCount > 0){
+        if (result.rowCount > 0) {
             console.log(result.rows[0].mail);
-	    req.session.userId = result.rows[0].mail;
+            req.session.userId = result.rows[0].mail;
             req.session.username = result.rows[0].motpasse;
-        
+
             res.status(200).json({
                 message: 'Connexion réussie',
                 user: {
@@ -103,10 +108,10 @@ app.post('/login', async (req, res) => {
                     username: req.session.username
                 }
             });
-        }else{
-            return res.status(400).send({message: "Identifiants incorrects."});
+        } else {
+            return res.status(400).send({ message: "Identifiants incorrects." });
         }
-    }catch (error) {
+    } catch (error) {
         console.error('Erreur lors de la connexion :', error);
         res.status(500).json({ message: 'Erreur serveur' });
     }
