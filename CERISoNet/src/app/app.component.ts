@@ -67,10 +67,10 @@ export class AppComponent implements OnInit {
         console.log('Réponse du serveur:', response);
 
         this.saveLastLogin();
-        this.showNotificationMessage('Connexion réussie!', 'success');
+        this.showNotificationMessage('Connexion réussie !', 'success');
       } catch (error) {
         console.error('Erreur:', error);
-        this.showNotificationMessage('Erreur lors de la connexion. Vérifiez vos informations et réessayez.', 'error');
+        this.showNotificationMessage('Erreur lors de la connexion.\nVérifiez vos informations et réessayez.', 'error');
       }
     } else {
       console.log('Le formulaire est invalide');
