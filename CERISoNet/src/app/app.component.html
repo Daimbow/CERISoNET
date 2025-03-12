@@ -1,15 +1,12 @@
 <main class="main">
-        <!-- Bandeau de notification -->
-        <div *ngIf="showNotification" [ngClass]="notificationClass" class="notification-banner">
-            <div class="notification-content">
-                <strong>{{ notificationTitle }}</strong>
-                <p>{{ notificationMessage }}</p>
-                <p *ngIf="lastLogin" class="last-login">{{ lastLogin }}</p>
-            </div>
+    <!-- Bandeau de notification -->
+    <div *ngIf="showNotification" [ngClass]="notificationClass" class="notification-banner">
+        <div class="notification-content">
+            <strong>{{ notificationTitle }}</strong>
+            <p>{{ notificationMessage }}</p>
+            <p *ngIf="lastLogin && notificationClass === 'success'" class="last-login">{{ lastLogin }}</p>
         </div>
-        
-        
-
+    </div>
 
     <div class="row vh-100 g-0">
         <div class="col-lg-6 position-relative d-none d-lg-block">
@@ -43,5 +40,4 @@
             </div>
         </div>
     </div>
-
 </main>

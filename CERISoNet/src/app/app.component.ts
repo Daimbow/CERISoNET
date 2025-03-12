@@ -30,20 +30,12 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadLastLogin();
-  }
-
-  // Récupérer la dernière connexion depuis le Local Storage
-  loadLastLogin(): void {
-    const storedDate = localStorage.getItem('lastLogin');
-    if (storedDate) {
-      this.lastLogin = `Dernière connexion : ${storedDate}`;
-    }
+    this.lastLogin = null; // Ne charge pas lastLogin au démarrage
   }
 
   // Enregistrer la dernière connexion dans le Local Storage
   saveLastLogin(): void {
-    const now = new Date().toLocaleString(); // Date et heure actuelles
+    const now = new Date().toLocaleString();
     localStorage.setItem('lastLogin', now);
     this.lastLogin = `Dernière connexion : ${now}`;
   }
@@ -53,9 +45,13 @@ export class AppComponent implements OnInit {
     this.notificationMessage = message;
     this.notificationTitle = type === 'success' ? 'Succès' : 'Erreur';
     this.notificationClass = type === 'success' ? 'success' : 'error';
-  
+
+    if (type !== 'success') {
+      this.lastLogin = null; // Efface lastLogin si erreur
+    }
+
     this.showNotification = true;
-  
+
     setTimeout(() => {
       this.showNotification = false;
     }, 7000);
@@ -70,7 +66,7 @@ export class AppComponent implements OnInit {
         const response = await this.http.post('https://pedago.univ-avignon.fr:3223/login', formData, { headers }).toPromise();
         console.log('Réponse du serveur:', response);
 
-        this.saveLastLogin(); 
+        this.saveLastLogin();
         this.showNotificationMessage('Connexion réussie!', 'success');
       } catch (error) {
         console.error('Erreur:', error);
@@ -80,5 +76,5 @@ export class AppComponent implements OnInit {
       console.log('Le formulaire est invalide');
       alert('Le formulaire est invalide. Assurez-vous que tous les champs sont correctement remplis.');
     }
-  } 
+  }
 }
