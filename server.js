@@ -10,7 +10,10 @@ import pg from 'pg';
 import mongoose from 'mongoose'
 import MongoDBStore from 'connect-mongodb-session';
 import crypto from 'crypto';
+import dotenv from 'dotenv';
 
+// Chargement des variables d'environnement
+dotenv.config();
 
 // Chemins des fichiers et dossiers
 const __filename = fileURLToPath(import.meta.url);
@@ -18,17 +21,17 @@ const __dirname = path.dirname(__filename);
 
 // Connexion à PostgreSQL
 const pool = new pg.Pool({
-    user: 'uapv2500814',
-    host: 'pedago01c.univ-avignon.fr',
-    database: 'etd',
-    password: 'ALCrxZ',
-    port: 5432
+    user: process.env.POSTGRES_USER,
+    host: process.env.POSTGRES_HOST,
+    database: process.env.POSTGRES_DB,
+    password: process.env.POSTGRES_PASSWORD,
+    port: process.env.POSTGRES_PORT
 });
 
 // Instance de l'application Express
 const app = express();
 
-const MONGO_URI = 'mongodb://pedago01c.univ-avignon.fr:27017/db-CERI';
+const MONGO_URI = process.env.MONGO_URI;
 
 
 mongoose.connect(MONGO_URI)
@@ -46,7 +49,7 @@ const store = new MongoDBSessionStore({
 
 // Middleware de session
 app.use(session({
-    secret: '5d41402abc4b2a76b9719d911017c5920a6e25eacdfcbb5a2dcf8a5b7b4a1e08',
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     store: store, 
@@ -63,7 +66,7 @@ app.use(express.static(path.join(__dirname, 'CERISoNet/dist/ceriso-net/browser')
 // Configuration du serveur HTTPS.
 const options = {
     pfx: fs.readFileSync(path.join(__dirname, 'certificat.pfx')),
-    passphrase: 'NodeTP',
+    passphrase:  process.env.CERTIFICATE_PASSPHRASE,
 };
 
 // Création du serveur HTTPS.
