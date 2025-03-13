@@ -15,6 +15,7 @@ import dotenv from 'dotenv';
 // Chargement des variables d'environnement
 dotenv.config();
 
+console.log(process.env.POSTGRES_USER);
 // Chemins des fichiers et dossiers
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
