@@ -1,4 +1,5 @@
 <main class="main">
+
     <!-- Bandeau de notification -->
     <div *ngIf="showNotification" [ngClass]="notificationClass" class="notification-banner">
         <div class="notification-content">
@@ -9,11 +10,15 @@
     </div>
 
     <div class="row vh-100 g-0">
+
+        <!-- Image de fond  -->
         <div class="col-lg-6 position-relative d-none d-lg-block">
             <div class="bg-holder" style="background-image: url('assets/images/fond.png'); height: 100%; background-size: cover;"></div>
         </div>
         <div class="col-lg-6 col-12 d-flex justify-content-center align-items-center">
             <div class="text-center">
+
+                <!-- Logo -->
                 <a href="#" class="d-flex justify-content-center mb-4">
                     <img src="assets/images/logo.png" alt="Logo" width="150">
                 </a>

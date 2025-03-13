@@ -6,7 +6,7 @@ import fs from 'fs';
 import https from 'https';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import pg from 'pg'; 
+import pg from 'pg';
 import mongoose from 'mongoose'
 import MongoDBStore from 'connect-mongodb-session';
 import crypto from 'crypto';
@@ -31,20 +31,20 @@ const pool = new pg.Pool({
 // Instance de l'application Express
 const app = express();
 
+// Connexion à MongoDB
 const MONGO_URI = process.env.MONGO_URI;
 
-
 mongoose.connect(MONGO_URI)
-  .then(() => console.log('Connecté à MongoDB pour les sessions'))
-  .catch(err => console.error('Erreur MongoDB:', err));
+    .then(() => console.log('Connecté à MongoDB pour les sessions'))
+    .catch(err => console.error('Erreur MongoDB:', err));
 
 
 // Création du store MongoDB pour stocker les sessions
 const MongoDBSessionStore = MongoDBStore(session);
 const store = new MongoDBSessionStore({
     uri: MONGO_URI,
-    collection: 'MySession3223', 
-    expires: 1000 * 60 * 60 * 24 
+    collection: 'MySession3223',
+    expires: 1000 * 60 * 60 * 24
 });
 
 // Middleware de session
@@ -52,9 +52,9 @@ app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    store: store, 
+    store: store,
     cookie: {
-        maxAge: 1000 * 60 * 60 * 24, 
+        maxAge: 1000 * 60 * 60 * 24,
         secure: true
     }
 }));
@@ -66,7 +66,7 @@ app.use(express.static(path.join(__dirname, 'CERISoNet/dist/ceriso-net/browser')
 // Configuration du serveur HTTPS.
 const options = {
     pfx: fs.readFileSync(path.join(__dirname, 'certificat.pfx')),
-    passphrase:  process.env.CERTIFICATE_PASSPHRASE,
+    passphrase: process.env.CERTIFICATE_PASSPHRASE,
 };
 
 // Création du serveur HTTPS.
@@ -94,16 +94,19 @@ app.post('/login', async (req, res) => {
     const hashedPassword = crypto.createHash('sha1').update(password).digest('hex');
 
     try {
+
+        // Requête SQL pour vérifier les informations de connexion
         const result = await pool.query(
             'SELECT * FROM fredouil.compte WHERE mail = $1 AND motpasse = $2',
             [username, hashedPassword]
         );
 
+        // Si les informations sont correctes enregistre l'utilisateur dans la session
         if (result.rowCount > 0) {
-            console.log(result.rows[0].mail);
             req.session.userId = result.rows[0].mail;
             req.session.username = result.rows[0].motpasse;
 
+            // Renvoie une réponse JSON indiquant que la connexion a reussi
             res.status(200).json({
                 message: 'Connexion réussie',
                 user: {
@@ -115,7 +118,6 @@ app.post('/login', async (req, res) => {
             return res.status(400).send({ message: "Identifiants incorrects." });
         }
     } catch (error) {
-        console.error('Erreur lors de la connexion :', error);
         res.status(500).json({ message: 'Erreur serveur' });
     }
 });

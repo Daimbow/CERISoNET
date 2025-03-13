@@ -40,7 +40,7 @@ body{
     top: 10px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 9999; /* S'assurer que la notification soit au-dessus des autres éléments */
+    z-index: 9999;
     width: 90%;
     max-width: 500px;
     padding: 15px;
@@ -48,16 +48,16 @@ body{
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #28a745; /* Par défaut success */
+    background-color: #28a745; 
     color: white;
   }
   
   .notification-banner.error {
-    background-color: #dc3545; /* Erreur */
+    background-color: #dc3545; 
   }
   
   .notification-banner.success {
-    background-color: #28a745; /* Succès */
+    background-color: #28a745;  
   }
   
   .notification-content {
