@@ -184,7 +184,13 @@ app.get('/messages', async (req, res) => {
                 sortOptions = { likes: -1 };
                 break;
             case 'comments':
-                sortOptions = { 'comments.length': -1 };
+                    sortOptions = { 
+                        $expr: { 
+                            $size: { 
+                                $ifNull: ["$comments", []] 
+                            } 
+                        }
+                    };
                 break;
             default:
                 sortOptions = { date: -1, hour: -1 };
