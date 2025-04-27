@@ -480,9 +480,6 @@ app.post('/messages/:id/like', async (req, res) => {
             return res.status(401).json({ message: 'Non autorisé' });
         }
         
-        // Utiliser ObjectId au lieu de parseInt
-        const messageId = req.params.id;
-        
         // Récupérer l'ID de l'utilisateur connecté
         const userResult = await pool.query(
             'SELECT id FROM fredouil.compte WHERE mail = $1',
@@ -498,9 +495,12 @@ app.post('/messages/:id/like', async (req, res) => {
         const db = mongoose.connection.db;
         const messagesCollection = db.collection('CERISoNet');
         
-        // Mettre à jour le nombre de likes du message en utilisant ObjectId
+        // Convertir l'ID en ObjectId correctement
+        const messageId = new ObjectId(req.params.id);
+        
+        // Mettre à jour le nombre de likes du message
         const result = await messagesCollection.updateOne(
-            { _id: new ObjectId(messageId) },
+            { _id: messageId },
             { $inc: { likes: 1 } }
         );
         
@@ -515,6 +515,7 @@ app.post('/messages/:id/like', async (req, res) => {
     }
 });
 
+
 // Route pour commenter un message
 app.post('/messages/:id/comment', async (req, res) => {
     try {
@@ -522,8 +523,6 @@ app.post('/messages/:id/comment', async (req, res) => {
             return res.status(401).json({ message: 'Non autorisé' });
         }
         
-        // Utiliser ObjectId au lieu de parseInt
-        const messageId = req.params.id;
         const { text } = req.body;
         
         if (!text || !text.trim()) {
@@ -560,9 +559,12 @@ app.post('/messages/:id/comment', async (req, res) => {
             authorAvatar: user.avatar
         };
         
-        // Ajouter le commentaire au message en utilisant ObjectId
+        // Convertir l'ID en ObjectId correctement
+        const messageId = new ObjectId(req.params.id);
+        
+        // Ajouter le commentaire au message
         const result = await messagesCollection.updateOne(
-            { _id: new ObjectId(messageId) },
+            { _id: messageId },
             { $push: { comments: newComment } }
         );
         
@@ -584,8 +586,6 @@ app.post('/messages/:id/share', async (req, res) => {
             return res.status(401).json({ message: 'Non autorisé' });
         }
         
-        // Utiliser ObjectId au lieu de parseInt
-        const messageId = req.params.id;
         const { body } = req.body;
         
         // Récupérer l'ID de l'utilisateur connecté
@@ -603,8 +603,11 @@ app.post('/messages/:id/share', async (req, res) => {
         const db = mongoose.connection.db;
         const messagesCollection = db.collection('CERISoNet');
         
-        // Vérifier que le message à partager existe en utilisant ObjectId
-        const originalMessage = await messagesCollection.findOne({ _id: new ObjectId(messageId) });
+        // Convertir l'ID en ObjectId correctement
+        const messageId = new ObjectId(req.params.id);
+        
+        // Vérifier que le message à partager existe
+        const originalMessage = await messagesCollection.findOne({ _id: messageId });
         
         if (!originalMessage) {
             return res.status(404).json({ message: 'Message non trouvé' });
@@ -614,7 +617,7 @@ app.post('/messages/:id/share', async (req, res) => {
         const date = now.toLocaleDateString('fr-FR');
         const hour = now.toLocaleTimeString('fr-FR');
         
-        // Créer le nouveau message (partagé) avec un identifiant généré par MongoDB
+        // Créer le nouveau message (partagé)
         const newMessage = {
             date,
             hour,
@@ -623,7 +626,7 @@ app.post('/messages/:id/share', async (req, res) => {
             likes: 0,
             comments: [],
             hashtags: [],
-            shared: messageId // Stocker l'ID original comme chaîne
+            shared: messageId.toString() // Stocker l'ID original comme chaîne
         };
         
         // Insérer le nouveau message
