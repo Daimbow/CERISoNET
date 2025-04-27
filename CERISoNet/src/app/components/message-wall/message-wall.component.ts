@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgbModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { MessageService } from '../../services/message.service';
 import { UserService } from '../../services/user.service';
+import { WebSocketService } from '../../services/websocket.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-message-wall',
@@ -17,7 +19,7 @@ import { UserService } from '../../services/user.service';
   templateUrl: './message-wall.component.html',
   styleUrls: ['./message-wall.component.css']
 })
-export class MessageWallComponent implements OnInit {
+export class MessageWallComponent implements OnInit, OnDestroy {
   // Messages
   messages: any[] = [];
   
@@ -56,13 +58,32 @@ export class MessageWallComponent implements OnInit {
   processingComment: number[] = [];
   processingShare: number[] = [];
   
+  // Subscription WebSocket
+  private wsSubscription: Subscription | null = null;
+  
   constructor(
     private messageService: MessageService,
-    private userService: UserService
+    private userService: UserService,
+    private wsService: WebSocketService
   ) {}
 
   ngOnInit(): void {
     this.loadMessages();
+    
+    // S'abonner aux événements WebSocket
+    this.wsSubscription = this.wsService.messages$.subscribe(message => {
+      // Mettre à jour en temps réel en fonction des événements reçus
+      if (['like', 'comment', 'share'].includes(message.type)) {
+        // Recharger les messages si une action pertinente a lieu
+        this.loadMessages();
+      }
+    });
+  }
+  
+  ngOnDestroy(): void {
+    if (this.wsSubscription) {
+      this.wsSubscription.unsubscribe();
+    }
   }
 
   loadMessages(): void {
@@ -140,6 +161,9 @@ export class MessageWallComponent implements OnInit {
           message.isLikedByCurrentUser = true;
         }
         
+        // Notifier les autres utilisateurs via WebSocket
+        this.wsService.notifyLike(messageId);
+        
         this.processingLike = this.processingLike.filter(id => id !== messageId);
       },
       error: (error) => {
@@ -162,6 +186,9 @@ export class MessageWallComponent implements OnInit {
           if (!message.comments) message.comments = [];
           message.comments.push(newComment);
         }
+        
+        // Notifier les autres utilisateurs via WebSocket
+        this.wsService.notifyComment(messageId, this.commentInput[messageId]);
         
         // Réinitialiser le formulaire
         this.commentInput[messageId] = '';
@@ -193,6 +220,10 @@ export class MessageWallComponent implements OnInit {
         this.shareInput[messageId] = '';
         this.showShareForm[messageId] = false;
         this.processingShare = this.processingShare.filter(id => id !== messageId);
+        
+        // Notifier les autres utilisateurs via WebSocket
+        this.wsService.notifyShare(messageId);
+        
         this.loadMessages(); // Recharger pour voir le message partagé
       },
       error: (error) => {

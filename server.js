@@ -11,9 +11,12 @@ import mongoose from 'mongoose'
 import MongoDBStore from 'connect-mongodb-session';
 import crypto from 'crypto';
 import dotenv from 'dotenv';
+import { WebSocketServer } from 'ws';
+
 
 // Chargement des variables d'environnement
 dotenv.config();
+
 
 // Chemins des fichiers et dossiers
 const __filename = fileURLToPath(import.meta.url);
@@ -73,6 +76,146 @@ const options = {
 https.createServer(options, app).listen(3223, () => {
     console.log('Serveur HTTPS démarré sur https://pedago.univ-avignon.fr:3223');
 });
+
+// Création du serveur WebSocket qui utilise le même serveur HTTPS
+const server = https.createServer(options, app);
+const wss = new WebSocketServer({ server, path: '/ws' });
+
+const connectedClients = new Map()
+
+// Gestion des connexions WebSocket
+wss.on('connection', (ws, req) => {
+    // Récupérer l'identifiant de l'utilisateur à partir de l'URL
+    const url = new URL(req.url, 'https://pedago.univ-avignon.fr');
+    const userId = url.searchParams.get('userId');
+    
+    console.log(`Nouvelle connexion WebSocket de l'utilisateur: ${userId}`);
+    
+    // Enregistrer la connexion
+    if (userId) {
+        connectedClients.set(userId, ws);
+    }
+    
+    // Envoyer un message de bienvenue
+    ws.send(JSON.stringify({
+        type: 'info',
+        message: 'Connexion WebSocket établie'
+    }));
+    
+    // Écouter les messages du client
+    ws.on('message', async (message) => {
+        try {
+            const data = JSON.parse(message);
+            
+            // Traiter les différents types de messages
+            switch (data.type) {
+                case 'connection':
+                    // Notifier tout le monde qu'un utilisateur s'est connecté
+                    broadcastToAll({
+                        type: 'connection',
+                        data: {
+                            username: data.data.username,
+                            timestamp: new Date().toISOString()
+                        }
+                    }, userId);
+                    break;
+                    
+                case 'like':
+                    // Notifier tout le monde qu'un utilisateur a aimé un message
+                    broadcastToAll({
+                        type: 'like',
+                        data: {
+                            username: data.data.username,
+                            messageId: data.data.messageId,
+                            timestamp: new Date().toISOString()
+                        }
+                    }, userId);
+                    break;
+                    
+                case 'comment':
+                    // Notifier tout le monde qu'un utilisateur a commenté un message
+                    broadcastToAll({
+                        type: 'comment',
+                        data: {
+                            username: data.data.username,
+                            messageId: data.data.messageId,
+                            commentText: data.data.commentText,
+                            timestamp: new Date().toISOString()
+                        }
+                    }, userId);
+                    break;
+                    
+                case 'share':
+                    // Notifier tout le monde qu'un utilisateur a partagé un message
+                    broadcastToAll({
+                        type: 'share',
+                        data: {
+                            username: data.data.username,
+                            messageId: data.data.messageId,
+                            timestamp: new Date().toISOString()
+                        }
+                    }, userId);
+                    break;
+                    
+                case 'logout':
+                    // Notifier tout le monde qu'un utilisateur s'est déconnecté
+                    broadcastToAll({
+                        type: 'logout',
+                        data: {
+                            username: data.data.username,
+                            timestamp: new Date().toISOString()
+                        }
+                    }, userId);
+                    break;
+                    
+                default:
+                    console.log(`Type de message non reconnu: ${data.type}`);
+            }
+        } catch (error) {
+            console.error('Erreur lors du traitement du message WebSocket:', error);
+        }
+    });
+    
+    // Gérer la fermeture de connexion
+    ws.on('close', () => {
+        console.log(`Connexion WebSocket fermée pour l'utilisateur: ${userId}`);
+        
+        // Supprimer la connexion
+        if (userId) {
+            connectedClients.delete(userId);
+        }
+    });
+});
+
+// Fonction pour diffuser un message à tous les clients connectés sauf l'expéditeur
+function broadcastToAll(message, excludeUserId) {
+    const messageStr = JSON.stringify(message);
+    
+    connectedClients.forEach((client, id) => {
+        if (id !== excludeUserId && client.readyState === 1) { // 1 = WebSocket.OPEN
+            client.send(messageStr);
+        }
+    });
+}
+
+// Fonction pour envoyer un message à un client spécifique
+function sendToUser(userId, message) {
+    const client = connectedClients.get(userId);
+    
+    if (client && client.readyState === 1) { // 1 = WebSocket.OPEN
+        client.send(JSON.stringify(message));
+        return true;
+    }
+    
+    return false;
+}
+
+server.listen(3223, () => {
+    console.log('Serveur HTTPS et WebSockets démarrés sur https://pedago.univ-avignon.fr:3223');
+});
+
+
+
 
 // Middleware qui définit la route principal.
 app.get('/', (req, res) => {
