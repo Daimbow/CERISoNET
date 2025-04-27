@@ -185,13 +185,9 @@ app.get('/messages', async (req, res) => {
                 break;
             case 'comments':
                     sortOptions = { 
-                        $expr: { 
-                            $size: { 
-                                $ifNull: ["$comments", []] 
-                            } 
-                        }
+                        commentsCount: -1 
                     };
-                break;
+                    break;
             default:
                 sortOptions = { date: -1, hour: -1 };
         }
@@ -200,11 +196,19 @@ app.get('/messages', async (req, res) => {
         const total = await messagesCollection.countDocuments(query);
         
         // Récupérer les messages avec pagination
-        const messages = await messagesCollection.find(query)
-            .sort(sortOptions)
-            .skip(skip)
-            .limit(limit)
-            .toArray();
+        const messages = await messagesCollection.aggregate([
+            { $match: query },
+            { $addFields: { 
+                commentsCount: { 
+                    $size: { 
+                        $ifNull: ["$comments", []] 
+                    } 
+                } 
+            }},
+            { $sort: sortOptions },
+            { $skip: skip },
+            { $limit: limit }
+        ]).toArray();
 
         // Enrichir les messages avec les informations des utilisateurs
         const enrichedMessages = await Promise.all(messages.map(async (message) => {
