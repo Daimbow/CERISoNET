@@ -12,6 +12,8 @@ import MongoDBStore from 'connect-mongodb-session';
 import crypto from 'crypto';
 import dotenv from 'dotenv';
 import { WebSocketServer } from 'ws';
+import { ObjectId } from 'mongodb';
+
 
 
 // Chargement des variables d'environnement
@@ -73,9 +75,9 @@ const options = {
 };
 
 // Création du serveur HTTPS.
-https.createServer(options, app).listen(3223, () => {
-    console.log('Serveur HTTPS démarré sur https://pedago.univ-avignon.fr:3223');
-});
+//https.createServer(options, app).listen(3223, () => {
+//    console.log('Serveur HTTPS démarré sur https://pedago.univ-avignon.fr:3223');
+//});
 
 // Création du serveur WebSocket qui utilise le même serveur HTTPS
 const server = https.createServer(options, app);
@@ -371,20 +373,28 @@ app.get('/messages', async (req, res) => {
                 
                 // Si c'est un message partagé, récupérer le message d'origine
                 if (message.shared) {
-                    const sharedMessage = await messagesCollection.findOne({ _id: message.shared });
-                    if (sharedMessage) {
-                        // Récupérer les infos de l'auteur du message partagé
-                        const sharedAuthorResult = await pool.query(
-                            'SELECT nom, prenom, pseudo, avatar FROM fredouil.compte WHERE id = $1',
-                            [sharedMessage.createdBy]
-                        );
+                    try {
+                        // Utiliser ObjectId pour récupérer le message partagé
+                        const sharedMessage = await messagesCollection.findOne({ 
+                            _id: typeof message.shared === 'string' ? new ObjectId(message.shared) : message.shared 
+                        });
                         
-                        enrichedMessage.sharedMessage = {
-                            ...sharedMessage,
-                            authorName: authorResult.rows.length > 0 ? `${authorResult.rows[0].nom} ${authorResult.rows[0].prenom}` : 'Utilisateur inconnu',
-                            authorPseudo: sharedAuthorResult.rows.length > 0 ? sharedAuthorResult.rows[0].pseudo : 'Utilisateur inconnu',
-                            authorAvatar: sharedAuthorResult.rows.length > 0 ? sharedAuthorResult.rows[0].avatar : null
-                        };
+                        if (sharedMessage) {
+                            // Récupérer les infos de l'auteur du message partagé
+                            const sharedAuthorResult = await pool.query(
+                                'SELECT nom, prenom, pseudo, avatar FROM fredouil.compte WHERE id = $1',
+                                [sharedMessage.createdBy]
+                            );
+                            
+                            enrichedMessage.sharedMessage = {
+                                ...sharedMessage,
+                                authorName: sharedAuthorResult.rows.length > 0 ? `${sharedAuthorResult.rows[0].nom} ${sharedAuthorResult.rows[0].prenom}` : 'Utilisateur inconnu',
+                                authorPseudo: sharedAuthorResult.rows.length > 0 ? sharedAuthorResult.rows[0].pseudo : 'Utilisateur inconnu',
+                                authorAvatar: sharedAuthorResult.rows.length > 0 ? sharedAuthorResult.rows[0].avatar : null
+                            };
+                        }
+                    } catch (error) {
+                        console.error('Erreur lors de la récupération du message partagé:', error);
                     }
                 }
                 
@@ -431,11 +441,13 @@ app.get('/messages/:id', async (req, res) => {
             return res.status(401).json({ message: 'Non autorisé' });
         }
         
-        const messageId = parseInt(req.params.id);
+        // Utiliser ObjectId au lieu de parseInt
+        const messageId = req.params.id;
         const db = mongoose.connection.db;
         const messagesCollection = db.collection('CERISoNet');
         
-        const message = await messagesCollection.findOne({ _id: messageId });
+        // Utiliser ObjectId pour la recherche
+        const message = await messagesCollection.findOne({ _id: new ObjectId(messageId) });
         
         if (!message) {
             return res.status(404).json({ message: 'Message non trouvé' });
@@ -468,7 +480,8 @@ app.post('/messages/:id/like', async (req, res) => {
             return res.status(401).json({ message: 'Non autorisé' });
         }
         
-        const messageId = parseInt(req.params.id);
+        // Utiliser ObjectId au lieu de parseInt
+        const messageId = req.params.id;
         
         // Récupérer l'ID de l'utilisateur connecté
         const userResult = await pool.query(
@@ -485,9 +498,9 @@ app.post('/messages/:id/like', async (req, res) => {
         const db = mongoose.connection.db;
         const messagesCollection = db.collection('CERISoNet');
         
-        // Mettre à jour le nombre de likes du message
+        // Mettre à jour le nombre de likes du message en utilisant ObjectId
         const result = await messagesCollection.updateOne(
-            { _id: messageId },
+            { _id: new ObjectId(messageId) },
             { $inc: { likes: 1 } }
         );
         
@@ -509,7 +522,8 @@ app.post('/messages/:id/comment', async (req, res) => {
             return res.status(401).json({ message: 'Non autorisé' });
         }
         
-        const messageId = parseInt(req.params.id);
+        // Utiliser ObjectId au lieu de parseInt
+        const messageId = req.params.id;
         const { text } = req.body;
         
         if (!text || !text.trim()) {
@@ -546,9 +560,9 @@ app.post('/messages/:id/comment', async (req, res) => {
             authorAvatar: user.avatar
         };
         
-        // Ajouter le commentaire au message
+        // Ajouter le commentaire au message en utilisant ObjectId
         const result = await messagesCollection.updateOne(
-            { _id: messageId },
+            { _id: new ObjectId(messageId) },
             { $push: { comments: newComment } }
         );
         
@@ -570,7 +584,8 @@ app.post('/messages/:id/share', async (req, res) => {
             return res.status(401).json({ message: 'Non autorisé' });
         }
         
-        const messageId = parseInt(req.params.id);
+        // Utiliser ObjectId au lieu de parseInt
+        const messageId = req.params.id;
         const { body } = req.body;
         
         // Récupérer l'ID de l'utilisateur connecté
@@ -588,8 +603,8 @@ app.post('/messages/:id/share', async (req, res) => {
         const db = mongoose.connection.db;
         const messagesCollection = db.collection('CERISoNet');
         
-        // Vérifier que le message à partager existe
-        const originalMessage = await messagesCollection.findOne({ _id: messageId });
+        // Vérifier que le message à partager existe en utilisant ObjectId
+        const originalMessage = await messagesCollection.findOne({ _id: new ObjectId(messageId) });
         
         if (!originalMessage) {
             return res.status(404).json({ message: 'Message non trouvé' });
@@ -608,7 +623,7 @@ app.post('/messages/:id/share', async (req, res) => {
             likes: 0,
             comments: [],
             hashtags: [],
-            shared: messageId
+            shared: messageId // Stocker l'ID original comme chaîne
         };
         
         // Insérer le nouveau message
