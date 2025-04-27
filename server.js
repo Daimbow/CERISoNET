@@ -442,17 +442,12 @@ app.post('/messages/:id/share', async (req, res) => {
             return res.status(404).json({ message: 'Message non trouvé' });
         }
         
-        // Générer un nouvel ID pour le message partagé
-        const latestMessage = await messagesCollection.find().sort({ _id: -1 }).limit(1).toArray();
-        const newId = latestMessage.length > 0 ? latestMessage[0]._id + 1 : 1;
-        
         const now = new Date();
         const date = now.toLocaleDateString('fr-FR');
         const hour = now.toLocaleTimeString('fr-FR');
         
-        // Créer le nouveau message (partagé)
+        // Créer le nouveau message (partagé) avec un identifiant généré par MongoDB
         const newMessage = {
-            _id: newId,
             date,
             hour,
             body: body || 'Je partage ce message',
@@ -464,9 +459,12 @@ app.post('/messages/:id/share', async (req, res) => {
         };
         
         // Insérer le nouveau message
-        await messagesCollection.insertOne(newMessage);
+        const result = await messagesCollection.insertOne(newMessage);
         
-        res.json(newMessage);
+        res.json({
+            ...newMessage,
+            _id: result.insertedId
+        });
     } catch (error) {
         console.error('Erreur lors du partage du message:', error);
         res.status(500).json({ message: 'Erreur serveur' });
