@@ -8,6 +8,8 @@
         </div>
     </div>
 
+    <app-notifications></app-notifications>
+
     <!-- Page de connexion (affichée uniquement si non connecté) -->
     <div *ngIf="!isLoggedIn" class="row vh-100 g-0">
         <!-- Image de fond  -->
@@ -45,7 +47,12 @@
     </div>
 
     <!-- Interface principale (affichée uniquement si connecté) -->
+     
     <div *ngIf="isLoggedIn" class="app-container">
+
+        <app-notifications class="position-fixed top-0 end-0 m-3 z-3"></app-notifications>
+
+        
         <!-- En-tête -->
         <header class="bg-white shadow-sm mb-4">
             <div class="container py-3">

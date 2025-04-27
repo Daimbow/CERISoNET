@@ -1,1 +1,11 @@
-<p>notifications works!</p>
+<div class="notifications-container">
+    <div *ngFor="let notification of notifications" 
+         class="notification-item" 
+         [ngClass]="'notification-' + notification.type">
+      <div class="notification-content">
+        <span class="notification-message">{{ notification.message }}</span>
+        <span class="notification-time">{{ formatTime(notification.timestamp) }}</span>
+      </div>
+      <button class="notification-close" (click)="removeNotification(notification.id)">×</button>
+    </div>
+  </div>
