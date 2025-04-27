@@ -119,5 +119,441 @@ app.post('/login', async (req, res) => {
         }
     } catch (error) {
         res.status(500).json({ message: 'Erreur serveur' });
+    
     }
+
+    // Route pour récupérer les messages avec pagination et filtres
+app.get('/messages', async (req, res) => {
+    try {
+        // Vérifier si l'utilisateur est connecté
+        if (!req.session.userId) {
+            return res.status(401).json({ message: 'Non autorisé' });
+        }
+
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 5;
+        const skip = (page - 1) * limit;
+        const sortBy = req.query.sortBy || 'date';
+        const filterOwner = req.query.filterOwner;
+        const filterHashtag = req.query.filterHashtag;
+
+        // Connexion à MongoDB
+        const db = mongoose.connection.db;
+        const messagesCollection = db.collection('CERISoNet');
+
+        // Construire la requête en fonction des filtres
+        let query = {};
+        
+        if (filterOwner === 'true') {
+            // Récupérer l'ID de l'utilisateur connecté
+            const userResult = await pool.query(
+                'SELECT id FROM fredouil.compte WHERE mail = $1',
+                [req.session.userId]
+            );
+            
+            if (userResult.rows.length > 0) {
+                query.createdBy = userResult.rows[0].id;
+            }
+        } else if (filterOwner === 'false') {
+            // Messages des autres utilisateurs
+            const userResult = await pool.query(
+                'SELECT id FROM fredouil.compte WHERE mail = $1',
+                [req.session.userId]
+            );
+            
+            if (userResult.rows.length > 0) {
+                query.createdBy = { $ne: userResult.rows[0].id };
+            }
+        }
+        
+        if (filterHashtag) {
+            query.hashtags = { $regex: filterHashtag, $options: 'i' };
+        }
+
+        // Définir l'ordre de tri
+        let sortOptions = {};
+        switch (sortBy) {
+            case 'date':
+                sortOptions = { date: -1, hour: -1 };
+                break;
+            case 'date-asc':
+                sortOptions = { date: 1, hour: 1 };
+                break;
+            case 'likes':
+                sortOptions = { likes: -1 };
+                break;
+            case 'comments':
+                sortOptions = { 'comments.length': -1 };
+                break;
+            default:
+                sortOptions = { date: -1, hour: -1 };
+        }
+
+        // Compter le nombre total de messages
+        const total = await messagesCollection.countDocuments(query);
+        
+        // Récupérer les messages avec pagination
+        const messages = await messagesCollection.find(query)
+            .sort(sortOptions)
+            .skip(skip)
+            .limit(limit)
+            .toArray();
+
+        // Enrichir les messages avec les informations des utilisateurs
+        const enrichedMessages = await Promise.all(messages.map(async (message) => {
+            try {
+                // Récupérer les infos de l'auteur
+                const authorResult = await pool.query(
+                    'SELECT nom_prenom, pseudo, avatar FROM fredouil.compte WHERE id = $1',
+                    [message.createdBy]
+                );
+                
+                const enrichedMessage = {
+                    ...message,
+                    authorName: authorResult.rows.length > 0 ? authorResult.rows[0].nom_prenom : 'Utilisateur inconnu',
+                    authorPseudo: authorResult.rows.length > 0 ? authorResult.rows[0].pseudo : 'Utilisateur inconnu',
+                    authorAvatar: authorResult.rows.length > 0 ? authorResult.rows[0].avatar : null
+                };
+                
+                // Si c'est un message partagé, récupérer le message d'origine
+                if (message.shared) {
+                    const sharedMessage = await messagesCollection.findOne({ _id: message.shared });
+                    if (sharedMessage) {
+                        // Récupérer les infos de l'auteur du message partagé
+                        const sharedAuthorResult = await pool.query(
+                            'SELECT nom_prenom, pseudo, avatar FROM fredouil.compte WHERE id = $1',
+                            [sharedMessage.createdBy]
+                        );
+                        
+                        enrichedMessage.sharedMessage = {
+                            ...sharedMessage,
+                            authorName: sharedAuthorResult.rows.length > 0 ? sharedAuthorResult.rows[0].nom_prenom : 'Utilisateur inconnu',
+                            authorPseudo: sharedAuthorResult.rows.length > 0 ? sharedAuthorResult.rows[0].pseudo : 'Utilisateur inconnu',
+                            authorAvatar: sharedAuthorResult.rows.length > 0 ? sharedAuthorResult.rows[0].avatar : null
+                        };
+                    }
+                }
+                
+                // Enrichir les commentaires avec les infos des auteurs
+                if (message.comments && message.comments.length > 0) {
+                    enrichedMessage.comments = await Promise.all(message.comments.map(async (comment) => {
+                        const commentAuthorResult = await pool.query(
+                            'SELECT nom_prenom, pseudo, avatar FROM fredouil.compte WHERE id = $1',
+                            [comment.commentedBy]
+                        );
+                        
+                        return {
+                            ...comment,
+                            authorName: commentAuthorResult.rows.length > 0 ? commentAuthorResult.rows[0].nom_prenom : 'Utilisateur inconnu',
+                            authorPseudo: commentAuthorResult.rows.length > 0 ? commentAuthorResult.rows[0].pseudo : 'Utilisateur inconnu',
+                            authorAvatar: commentAuthorResult.rows.length > 0 ? commentAuthorResult.rows[0].avatar : null
+                        };
+                    }));
+                }
+                
+                return enrichedMessage;
+            } catch (error) {
+                console.error('Erreur lors de l\'enrichissement du message:', error);
+                return message;
+            }
+        }));
+
+        res.json({
+            messages: enrichedMessages,
+            total,
+            page,
+            limit
+        });
+    } catch (error) {
+        console.error('Erreur lors de la récupération des messages:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+});
+
+// Route pour récupérer les détails d'un message partagé
+app.get('/messages/:id', async (req, res) => {
+    try {
+        if (!req.session.userId) {
+            return res.status(401).json({ message: 'Non autorisé' });
+        }
+        
+        const messageId = parseInt(req.params.id);
+        const db = mongoose.connection.db;
+        const messagesCollection = db.collection('CERISoNet');
+        
+        const message = await messagesCollection.findOne({ _id: messageId });
+        
+        if (!message) {
+            return res.status(404).json({ message: 'Message non trouvé' });
+        }
+        
+        // Récupérer les infos de l'auteur
+        const authorResult = await pool.query(
+            'SELECT nom_prenom, pseudo, avatar FROM fredouil.compte WHERE id = $1',
+            [message.createdBy]
+        );
+        
+        const enrichedMessage = {
+            ...message,
+            authorName: authorResult.rows.length > 0 ? authorResult.rows[0].nom_prenom : 'Utilisateur inconnu',
+            authorPseudo: authorResult.rows.length > 0 ? authorResult.rows[0].pseudo : 'Utilisateur inconnu',
+            authorAvatar: authorResult.rows.length > 0 ? authorResult.rows[0].avatar : null
+        };
+        
+        res.json(enrichedMessage);
+    } catch (error) {
+        console.error('Erreur lors de la récupération du message:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+});
+
+// Route pour liker un message
+app.post('/messages/:id/like', async (req, res) => {
+    try {
+        if (!req.session.userId) {
+            return res.status(401).json({ message: 'Non autorisé' });
+        }
+        
+        const messageId = parseInt(req.params.id);
+        
+        // Récupérer l'ID de l'utilisateur connecté
+        const userResult = await pool.query(
+            'SELECT id FROM fredouil.compte WHERE mail = $1',
+            [req.session.userId]
+        );
+        
+        if (userResult.rows.length === 0) {
+            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+        }
+        
+        const userId = userResult.rows[0].id;
+        
+        const db = mongoose.connection.db;
+        const messagesCollection = db.collection('CERISoNet');
+        
+        // Mettre à jour le nombre de likes du message
+        const result = await messagesCollection.updateOne(
+            { _id: messageId },
+            { $inc: { likes: 1 } }
+        );
+        
+        if (result.modifiedCount === 0) {
+            return res.status(404).json({ message: 'Message non trouvé' });
+        }
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Erreur lors du like du message:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+});
+
+// Route pour commenter un message
+app.post('/messages/:id/comment', async (req, res) => {
+    try {
+        if (!req.session.userId) {
+            return res.status(401).json({ message: 'Non autorisé' });
+        }
+        
+        const messageId = parseInt(req.params.id);
+        const { text } = req.body;
+        
+        if (!text || !text.trim()) {
+            return res.status(400).json({ message: 'Le commentaire ne peut pas être vide' });
+        }
+        
+        // Récupérer l'ID de l'utilisateur connecté
+        const userResult = await pool.query(
+            'SELECT id, nom_prenom, pseudo, avatar FROM fredouil.compte WHERE mail = $1',
+            [req.session.userId]
+        );
+        
+        if (userResult.rows.length === 0) {
+            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+        }
+        
+        const user = userResult.rows[0];
+        
+        const db = mongoose.connection.db;
+        const messagesCollection = db.collection('CERISoNet');
+        
+        const now = new Date();
+        const date = now.toLocaleDateString('fr-FR');
+        const hour = now.toLocaleTimeString('fr-FR');
+        
+        const newComment = {
+            text,
+            commentedBy: user.id,
+            date,
+            hour,
+            // Informations ajoutées pour le front-end
+            authorName: user.nom_prenom,
+            authorPseudo: user.pseudo,
+            authorAvatar: user.avatar
+        };
+        
+        // Ajouter le commentaire au message
+        const result = await messagesCollection.updateOne(
+            { _id: messageId },
+            { $push: { comments: newComment } }
+        );
+        
+        if (result.modifiedCount === 0) {
+            return res.status(404).json({ message: 'Message non trouvé' });
+        }
+        
+        res.json(newComment);
+    } catch (error) {
+        console.error('Erreur lors de l\'ajout du commentaire:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+});
+
+// Route pour partager un message
+app.post('/messages/:id/share', async (req, res) => {
+    try {
+        if (!req.session.userId) {
+            return res.status(401).json({ message: 'Non autorisé' });
+        }
+        
+        const messageId = parseInt(req.params.id);
+        const { body } = req.body;
+        
+        // Récupérer l'ID de l'utilisateur connecté
+        const userResult = await pool.query(
+            'SELECT id FROM fredouil.compte WHERE mail = $1',
+            [req.session.userId]
+        );
+        
+        if (userResult.rows.length === 0) {
+            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+        }
+        
+        const userId = userResult.rows[0].id;
+        
+        const db = mongoose.connection.db;
+        const messagesCollection = db.collection('CERISoNet');
+        
+        // Vérifier que le message à partager existe
+        const originalMessage = await messagesCollection.findOne({ _id: messageId });
+        
+        if (!originalMessage) {
+            return res.status(404).json({ message: 'Message non trouvé' });
+        }
+        
+        // Générer un nouvel ID pour le message partagé
+        const latestMessage = await messagesCollection.find().sort({ _id: -1 }).limit(1).toArray();
+        const newId = latestMessage.length > 0 ? latestMessage[0]._id + 1 : 1;
+        
+        const now = new Date();
+        const date = now.toLocaleDateString('fr-FR');
+        const hour = now.toLocaleTimeString('fr-FR');
+        
+        // Créer le nouveau message (partagé)
+        const newMessage = {
+            _id: newId,
+            date,
+            hour,
+            body: body || 'Je partage ce message',
+            createdBy: userId,
+            likes: 0,
+            comments: [],
+            hashtags: [],
+            shared: messageId
+        };
+        
+        // Insérer le nouveau message
+        await messagesCollection.insertOne(newMessage);
+        
+        res.json(newMessage);
+    } catch (error) {
+        console.error('Erreur lors du partage du message:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+});
+
+// Route pour récupérer les utilisateurs connectés
+app.get('/connected-users', async (req, res) => {
+    try {
+        if (!req.session.userId) {
+            return res.status(401).json({ message: 'Non autorisé' });
+        }
+        
+        const result = await pool.query(
+            'SELECT id, nom_prenom, pseudo, avatar FROM fredouil.compte WHERE statut_connexion = 1'
+        );
+        
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Erreur lors de la récupération des utilisateurs connectés:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+});
+
+// Route pour déconnexion
+app.post('/logout', async (req, res) => {
+    try {
+        if (req.session.userId) {
+            // Récupérer l'ID numérique de l'utilisateur
+            const userResult = await pool.query(
+                'SELECT id FROM fredouil.compte WHERE mail = $1',
+                [req.session.userId]
+            );
+            
+            if (userResult.rows.length > 0) {
+                // Mettre à jour le statut de connexion
+                await pool.query(
+                    'UPDATE fredouil.compte SET statut_connexion = 0 WHERE id = $1',
+                    [userResult.rows[0].id]
+                );
+            }
+            
+            // Détruire la session
+            req.session.destroy(err => {
+                if (err) {
+                    console.error("Erreur lors de la destruction de la session:", err);
+                    return res.status(500).json({ message: 'Erreur serveur' });
+                }
+                res.clearCookie("connect.sid");
+                res.status(200).json({ message: 'Déconnexion réussie' });
+            });
+        } else {
+            res.status(200).json({ message: 'Déjà déconnecté' });
+        }
+    } catch (error) {
+        console.error('Erreur lors de la déconnexion:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+});
+
+// Route pour mettre à jour le statut de connexion à la connexion
+app.post('/update-connection-status', async (req, res) => {
+    try {
+        if (!req.session.userId) {
+            return res.status(401).json({ message: 'Non autorisé' });
+        }
+        
+        // Récupérer l'ID numérique de l'utilisateur
+        const userResult = await pool.query(
+            'SELECT id FROM fredouil.compte WHERE mail = $1',
+            [req.session.userId]
+        );
+        
+        if (userResult.rows.length === 0) {
+            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+        }
+        
+        // Mettre à jour le statut de connexion
+        await pool.query(
+            'UPDATE fredouil.compte SET statut_connexion = 1 WHERE id = $1',
+            [userResult.rows[0].id]
+        );
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour du statut de connexion:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+});
+
 });
