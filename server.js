@@ -121,6 +121,7 @@ app.post('/login', async (req, res) => {
         res.status(500).json({ message: 'Erreur serveur' });
     
     }
+});
 
     // Route pour récupérer les messages avec pagination et filtres
 app.get('/messages', async (req, res) => {
@@ -554,6 +555,4 @@ app.post('/update-connection-status', async (req, res) => {
         console.error('Erreur lors de la mise à jour du statut de connexion:', error);
         res.status(500).json({ message: 'Erreur serveur' });
     }
-});
-
 });
