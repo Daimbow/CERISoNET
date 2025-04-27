@@ -447,7 +447,7 @@ app.get('/messages/:id', async (req, res) => {
         const messagesCollection = db.collection('CERISoNet');
         
         // Utiliser ObjectId pour la recherche
-        const message = await messagesCollection.findOne({ _id: new ObjectId(messageId) });
+        const message = await messagesCollection.findOne({ _id: messageId });
         
         if (!message) {
             return res.status(404).json({ message: 'Message non trouvé' });
@@ -496,7 +496,8 @@ app.post('/messages/:id/like', async (req, res) => {
         const messagesCollection = db.collection('CERISoNet');
         
         // Convertir l'ID en ObjectId correctement
-        const messageId = new ObjectId(req.params.id);
+        const messageId = parseInt(req.params.id, 10);
+
         
         // Mettre à jour le nombre de likes du message
         const result = await messagesCollection.updateOne(
@@ -560,7 +561,8 @@ app.post('/messages/:id/comment', async (req, res) => {
         };
         
         // Convertir l'ID en ObjectId correctement
-        const messageId = new ObjectId(req.params.id);
+        const messageId = parseInt(req.params.id, 10);
+
         
         // Ajouter le commentaire au message
         const result = await messagesCollection.updateOne(
@@ -604,7 +606,8 @@ app.post('/messages/:id/share', async (req, res) => {
         const messagesCollection = db.collection('CERISoNet');
         
         // Convertir l'ID en ObjectId correctement
-        const messageId = new ObjectId(req.params.id);
+        const messageId = parseInt(req.params.id, 10);
+
         
         // Vérifier que le message à partager existe
         const originalMessage = await messagesCollection.findOne({ _id: messageId });
