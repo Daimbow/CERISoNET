@@ -205,13 +205,13 @@ app.get('/messages', async (req, res) => {
             try {
                 // Récupérer les infos de l'auteur
                 const authorResult = await pool.query(
-                    'SELECT nom_prenom, pseudo, avatar FROM fredouil.compte WHERE id = $1',
+                    'SELECT nom, prenom, pseudo, avatar FROM fredouil.compte WHERE id = $1',
                     [message.createdBy]
                 );
                 
                 const enrichedMessage = {
                     ...message,
-                    authorName: authorResult.rows.length > 0 ? authorResult.rows[0].nom_prenom : 'Utilisateur inconnu',
+                    authorName: authorResult.rows.length > 0 ? `${authorResult.rows[0].nom} ${authorResult.rows[0].prenom}` : 'Utilisateur inconnu',
                     authorPseudo: authorResult.rows.length > 0 ? authorResult.rows[0].pseudo : 'Utilisateur inconnu',
                     authorAvatar: authorResult.rows.length > 0 ? authorResult.rows[0].avatar : null
                 };
@@ -222,13 +222,13 @@ app.get('/messages', async (req, res) => {
                     if (sharedMessage) {
                         // Récupérer les infos de l'auteur du message partagé
                         const sharedAuthorResult = await pool.query(
-                            'SELECT nom_prenom, pseudo, avatar FROM fredouil.compte WHERE id = $1',
+                            'SELECT nom, prenom, pseudo, avatar FROM fredouil.compte WHERE id = $1',
                             [sharedMessage.createdBy]
                         );
                         
                         enrichedMessage.sharedMessage = {
                             ...sharedMessage,
-                            authorName: sharedAuthorResult.rows.length > 0 ? sharedAuthorResult.rows[0].nom_prenom : 'Utilisateur inconnu',
+                            authorName: authorResult.rows.length > 0 ? `${authorResult.rows[0].nom} ${authorResult.rows[0].prenom}` : 'Utilisateur inconnu',
                             authorPseudo: sharedAuthorResult.rows.length > 0 ? sharedAuthorResult.rows[0].pseudo : 'Utilisateur inconnu',
                             authorAvatar: sharedAuthorResult.rows.length > 0 ? sharedAuthorResult.rows[0].avatar : null
                         };
@@ -239,13 +239,13 @@ app.get('/messages', async (req, res) => {
                 if (message.comments && message.comments.length > 0) {
                     enrichedMessage.comments = await Promise.all(message.comments.map(async (comment) => {
                         const commentAuthorResult = await pool.query(
-                            'SELECT nom_prenom, pseudo, avatar FROM fredouil.compte WHERE id = $1',
+                            'SELECT nom, prenom, pseudo, avatar FROM fredouil.compte WHERE id = $1',
                             [comment.commentedBy]
                         );
                         
                         return {
                             ...comment,
-                            authorName: commentAuthorResult.rows.length > 0 ? commentAuthorResult.rows[0].nom_prenom : 'Utilisateur inconnu',
+                            authorName: authorResult.rows.length > 0 ? `${authorResult.rows[0].nom} ${authorResult.rows[0].prenom}` : 'Utilisateur inconnu',
                             authorPseudo: commentAuthorResult.rows.length > 0 ? commentAuthorResult.rows[0].pseudo : 'Utilisateur inconnu',
                             authorAvatar: commentAuthorResult.rows.length > 0 ? commentAuthorResult.rows[0].avatar : null
                         };
@@ -290,13 +290,13 @@ app.get('/messages/:id', async (req, res) => {
         
         // Récupérer les infos de l'auteur
         const authorResult = await pool.query(
-            'SELECT nom_prenom, pseudo, avatar FROM fredouil.compte WHERE id = $1',
+            'SELECT nom, prenom, pseudo, avatar FROM fredouil.compte WHERE id = $1',
             [message.createdBy]
         );
         
         const enrichedMessage = {
             ...message,
-            authorName: authorResult.rows.length > 0 ? authorResult.rows[0].nom_prenom : 'Utilisateur inconnu',
+            authorName: authorResult.rows.length > 0 ? `${authorResult.rows[0].nom} ${authorResult.rows[0].prenom}` : 'Utilisateur inconnu',
             authorPseudo: authorResult.rows.length > 0 ? authorResult.rows[0].pseudo : 'Utilisateur inconnu',
             authorAvatar: authorResult.rows.length > 0 ? authorResult.rows[0].avatar : null
         };
@@ -365,7 +365,7 @@ app.post('/messages/:id/comment', async (req, res) => {
         
         // Récupérer l'ID de l'utilisateur connecté
         const userResult = await pool.query(
-            'SELECT id, nom_prenom, pseudo, avatar FROM fredouil.compte WHERE mail = $1',
+            'SELECT id, nom, prenom, pseudo, avatar FROM fredouil.compte WHERE mail = $1',
             [req.session.userId]
         );
         
@@ -388,7 +388,7 @@ app.post('/messages/:id/comment', async (req, res) => {
             date,
             hour,
             // Informations ajoutées pour le front-end
-            authorName: user.nom_prenom,
+            authorName: `${user.nom} ${user.prenom}`,
             authorPseudo: user.pseudo,
             authorAvatar: user.avatar
         };
@@ -481,7 +481,7 @@ app.get('/connected-users', async (req, res) => {
         }
         
         const result = await pool.query(
-            'SELECT id, nom_prenom, pseudo, avatar FROM fredouil.compte WHERE statut_connexion = 1'
+            'SELECT id, nom, prenom, pseudo, avatar FROM fredouil.compte WHERE statut_connexion = 1'
         );
         
         res.json(result.rows);
