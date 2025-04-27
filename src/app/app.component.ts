@@ -4,25 +4,16 @@ import { NgbToastModule } from '@ng-bootstrap/ng-bootstrap';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http';
-import { MessageWallComponent } from './components/message-wall/message-wall.component';
 
 @Component({
     selector: 'app-root',
     standalone: true,
-    imports: [
-        CommonModule, 
-        NgbToastModule, 
-        RouterModule, 
-        ReactiveFormsModule, 
-        HttpClientModule, 
-        MessageWallComponent
-    ],
+    imports: [CommonModule, NgbToastModule, RouterModule, ReactiveFormsModule, HttpClientModule],
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-    title = 'CERISoNet';
-    
+
     // Variable pour formulaire de connexion
     loginForm: FormGroup;
 
@@ -34,12 +25,6 @@ export class AppComponent implements OnInit {
     notificationClass: string = '';
     notificationTitle: string = '';
     notificationMessage: string = '';
-    
-    // Variable pour déterminer si l'utilisateur est connecté
-    isLoggedIn: boolean = false;
-    
-    // Nom d'utilisateur connecté
-    username: string = '';
 
     // Constructeur du composant avec injection de formBuilder et httpClient 
     constructor(private fb: FormBuilder, private http: HttpClient) {
@@ -51,16 +36,7 @@ export class AppComponent implements OnInit {
 
     // évite de charger lastLogin au démarrage
     ngOnInit(): void {
-        // Vérifier si l'utilisateur est déjà connecté
-        const storedLogin = localStorage.getItem('lastLogin');
-        if (storedLogin) {
-            this.lastLogin = `Dernière connexion : ${storedLogin}`;
-            this.isLoggedIn = true;
-            this.username = localStorage.getItem('username') || '';
-        } else {
-            this.lastLogin = null;
-            this.isLoggedIn = false;
-        }
+        this.lastLogin = null;
     }
 
     // Enregistre la dernière connexion dans le Local Storage
@@ -97,27 +73,17 @@ export class AppComponent implements OnInit {
             const headers = new HttpHeaders().set('Content-Type', 'application/json');
 
             try {
-                const response: any = await this.http.post('https://pedago.univ-avignon.fr:3223/login', formData, { headers }).toPromise();
+
+                await this.http.post('https://pedago.univ-avignon.fr:3223/login', formData, { headers }).toPromise();
                 this.saveLastLogin();
-                this.isLoggedIn = true;
-                this.username = formData.username;
-                localStorage.setItem('username', formData.username);
                 this.showNotificationMessage('Connexion réussie !', 'success');
+
             } catch (error) {
                 this.showNotificationMessage('Erreur lors de la connexion.\nVérifiez vos informations et réessayez.', 'error');
-                this.isLoggedIn = false;
             }
         } else {
             this.showNotificationMessage('Le formulaire est invalide. Assurez-vous que tous les champs sont correctement remplis.', 'error');
+
         }
-    }
-    
-    // Fonction de déconnexion
-    logout(): void {
-        // Idéalement, envoyer une requête au serveur pour déconnecter l'utilisateur
-        this.isLoggedIn = false;
-        this.username = '';
-        localStorage.removeItem('username');
-        this.showNotificationMessage('Vous avez été déconnecté.', 'success');
     }
 }

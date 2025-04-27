@@ -1,0 +1,48 @@
+<main class="main">
+
+    <!-- Bandeau de notification -->
+    <div *ngIf="showNotification" [ngClass]="notificationClass" class="notification-banner">
+        <div class="notification-content">
+            <strong>{{ notificationTitle }}</strong>
+            <p>{{ notificationMessage }}</p>
+            <p *ngIf="lastLogin && notificationClass === 'success'" class="last-login">{{ lastLogin }}</p>
+        </div>
+    </div>
+
+    <div class="row vh-100 g-0">
+
+        <!-- Image de fond  -->
+        <div class="col-lg-6 position-relative d-none d-lg-block">
+            <div class="bg-holder" style="background-image: url('assets/images/fond.png'); height: 100%; background-size: cover;"></div>
+        </div>
+        <div class="col-lg-6 col-12 d-flex justify-content-center align-items-center">
+            <div class="text-center">
+
+                <!-- Logo -->
+                <a href="#" class="d-flex justify-content-center mb-4">
+                    <img src="assets/images/logo.png" alt="Logo" width="150">
+                </a>
+
+                <div>
+                    <h3 class="fw-bold">Connectez-vous</h3>
+                    <p class="text-secondary">Accédez à votre compte</p>
+                </div>
+
+                <!-- Formulaire de connexion -->
+                <form (ngSubmit)="onSubmit()" [formGroup]="loginForm">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text"><i class="bx bx-user"></i></span>
+                        <input type="text" class="form-control form-control-lg fs-6" placeholder="Nom d'utilisateur" aria-label="Nom d'utilisateur" formControlName="username" required>
+                    </div>
+
+                    <div class="input-group mb-3">
+                        <span class="input-group-text"><i class="bx bx-lock-alt"></i></span>
+                        <input type="password" class="form-control form-control-lg fs-6" placeholder="Mot de passe" aria-label="Mot de passe" formControlName="password" required>
+                    </div>
+
+                    <button class="btn btn-lg w-100" type="submit" style="background-color: #ed6261; border-color: #ed6261; color: white;">Se connecter</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>

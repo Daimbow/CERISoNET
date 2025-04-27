@@ -1,0 +1,49 @@
+/* Styles pour le mur de messages */
+.card {
+    transition: all 0.3s ease;
+  }
+  
+  .card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+  }
+  
+  /* Style pour les hashtags */
+  :host ::ng-deep .text-primary {
+    font-weight: 500;
+  }
+  
+  /* Style pour les commentaires */
+  .bg-light {
+    background-color: #f8f9fa !important;
+  }
+  
+  /* Styles pour les boutons */
+  .btn-outline-danger:hover, 
+  .btn-outline-secondary:hover {
+    transform: translateY(-1px);
+  }
+  
+  /* Style pour la pagination */
+  :host ::ng-deep ngb-pagination .page-item.active .page-link {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+  }
+  
+  :host ::ng-deep ngb-pagination .page-link {
+    color: var(--bs-primary);
+  }
+  
+  /* Style pour les images */
+  img.rounded-circle {
+    object-fit: cover;
+  }
+  
+  /* Animation pour les éléments qui se chargent */
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  .card {
+    animation: fadeIn 0.5s ease;
+  }
