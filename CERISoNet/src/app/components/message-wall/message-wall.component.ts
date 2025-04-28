@@ -137,6 +137,13 @@ export class MessageWallComponent implements OnInit, OnDestroy {
     this.loadMessages();
   }
 
+  // Ajouter cette méthode après clearHashtagFilter()
+setHashtagFilter(tag: string): void {
+    this.hashtagFilter = tag;
+    this.currentPage = 1;
+    this.loadMessages();
+  }
+
   // Actions sur les messages
   toggleMessageExpand(messageId: number): void {
     if (this.expandedMessageId === messageId) {
