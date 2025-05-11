@@ -582,6 +582,7 @@ app.post('/messages/:id/comment', async (req, res) => {
 });
 
 // Route pour partager un message
+// Route pour partager un message - Version corrigée minimale
 app.post('/messages/:id/share', async (req, res) => {
     try {
         if (!req.session.userId) {
@@ -589,6 +590,13 @@ app.post('/messages/:id/share', async (req, res) => {
         }
         
         const { body } = req.body;
+        
+        // S'assurer que l'ID est un nombre valide
+        const messageId = parseInt(req.params.id, 10);
+        if (isNaN(messageId)) {
+            console.error('ID de message invalide pour le partage:', req.params.id);
+            return res.status(400).json({ message: 'ID de message invalide' });
+        }
         
         // Récupérer l'ID de l'utilisateur connecté
         const userResult = await pool.query(
@@ -601,13 +609,8 @@ app.post('/messages/:id/share', async (req, res) => {
         }
         
         const userId = userResult.rows[0].id;
-        
         const db = mongoose.connection.db;
         const messagesCollection = db.collection('CERISoNet');
-        
-        // Convertir l'ID en ObjectId correctement
-        const messageId = parseInt(req.params.id, 10);
-
         
         // Vérifier que le message à partager existe
         const originalMessage = await messagesCollection.findOne({ _id: messageId });
@@ -620,8 +623,13 @@ app.post('/messages/:id/share', async (req, res) => {
         const date = now.toLocaleDateString('fr-FR');
         const hour = now.toLocaleTimeString('fr-FR');
         
-        // Créer le nouveau message (partagé)
+        // Créer le nouveau message partagé
+        // Pour les IDs numériques, trouver le maximum actuel et incrémenter
+        const maxIdResult = await messagesCollection.find({}).sort({ _id: -1 }).limit(1).toArray();
+        const nextId = maxIdResult.length > 0 ? maxIdResult[0]._id + 1 : 1;
+        
         const newMessage = {
+            _id: nextId,
             date,
             hour,
             body: body || 'Je partage ce message',
@@ -629,16 +637,13 @@ app.post('/messages/:id/share', async (req, res) => {
             likes: 0,
             comments: [],
             hashtags: [],
-            shared: messageId.toString() // Stocker l'ID original comme chaîne
+            shared: messageId // Stocker l'ID comme nombre
         };
         
         // Insérer le nouveau message
         const result = await messagesCollection.insertOne(newMessage);
         
-        res.json({
-            ...newMessage,
-            _id: result.insertedId
-        });
+        res.json(newMessage);
     } catch (error) {
         console.error('Erreur lors du partage du message:', error);
         res.status(500).json({ message: 'Erreur serveur' });
