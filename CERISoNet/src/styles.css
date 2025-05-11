@@ -68,3 +68,58 @@ body{
     margin: 0;
   }
   
+  /* Variables globales de couleur */
+:root {
+  --primary-color: #ed6261;
+  --primary-hover: #e84a49;
+}
+
+/* Styles pour l'interface principale après connexion */
+.app-container {
+  background-color: #fafafa;
+}
+
+/* En-tête */
+header.bg-white {
+  border-bottom: 1px solid #dee2e6;
+}
+
+/* Modification de la bannière de notification pour la cohérence */
+.notification-banner {
+  background-color: rgba(237, 98, 97, 0.9) !important; /* Version transparente de la couleur principale */
+}
+
+.notification-banner.success {
+  background-color: rgba(40, 167, 69, 0.9) !important;
+}
+
+.notification-banner.error {
+  background-color: rgba(220, 53, 69, 0.9) !important;
+}
+
+/* Boutons dans l'interface connectée */
+.btn-primary {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover) !important;
+  border-color: var(--primary-hover) !important;
+}
+
+.btn-outline-danger {
+  color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
+.btn-outline-danger:hover {
+  background-color: var(--primary-color) !important;
+  color: #fff !important;
+}
+
+/* Style pour le footer */
+footer.bg-light {
+  background-color: #f8f9fa !important;
+  border-top: 1px solid #dee2e6;
+}
