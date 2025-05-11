@@ -590,13 +590,6 @@ app.post('/messages/:id/share', async (req, res) => {
         
         const { body } = req.body;
         
-        // S'assurer que l'ID est un nombre valide
-        const messageId = parseInt(req.params.id, 10);
-        if (isNaN(messageId)) {
-            console.error('ID de message invalide pour le partage:', req.params.id);
-            return res.status(400).json({ message: 'ID de message invalide' });
-        }
-        
         // Récupérer l'ID de l'utilisateur connecté
         const userResult = await pool.query(
             'SELECT id FROM fredouil.compte WHERE mail = $1',
@@ -608,14 +601,18 @@ app.post('/messages/:id/share', async (req, res) => {
         }
         
         const userId = userResult.rows[0].id;
+        
         const db = mongoose.connection.db;
         const messagesCollection = db.collection('CERISoNet');
+        
+        // Convertir l'ID en ObjectId correctement
+        const messageId = parseInt(req.params.id, 10);
+
         
         // Vérifier que le message à partager existe
         const originalMessage = await messagesCollection.findOne({ _id: messageId });
         
         if (!originalMessage) {
-            console.log('Message original non trouvé avec ID:', messageId);
             return res.status(404).json({ message: 'Message non trouvé' });
         }
         
@@ -623,31 +620,8 @@ app.post('/messages/:id/share', async (req, res) => {
         const date = now.toLocaleDateString('fr-FR');
         const hour = now.toLocaleTimeString('fr-FR');
         
-        // Examiner la structure des IDs existants dans la collection
-        const sampleMessages = await messagesCollection.find({}).limit(5).toArray();
-        console.log('Exemples d\'IDs existants:', sampleMessages.map(msg => ({ id: msg._id, type: typeof msg._id })));
-        
-        // Créer le nouveau message partagé
-        // Pour les IDs numériques, trouver le maximum actuel et incrémenter
-        const maxIdResult = await messagesCollection.find({})
-            .sort({ _id: -1 })
-            .limit(10)
-            .toArray();
-        
-        console.log('Résultats de recherche du max ID:', maxIdResult.map(msg => ({ id: msg._id, type: typeof msg._id })));
-        
-        // Trouver le plus grand ID numérique
-        let nextId = 1;
-        for (const msg of maxIdResult) {
-            if (typeof msg._id === 'number') {
-                nextId = Math.max(nextId, msg._id + 1);
-            }
-        }
-        
-        console.log('Prochain ID à utiliser:', nextId);
-        
+        // Créer le nouveau message (partagé)
         const newMessage = {
-            _id: nextId,
             date,
             hour,
             body: body || 'Je partage ce message',
@@ -655,18 +629,18 @@ app.post('/messages/:id/share', async (req, res) => {
             likes: 0,
             comments: [],
             hashtags: [],
-            shared: messageId // Stocker l'ID comme nombre
+            shared: messageId.toString() // Stocker l'ID original comme chaîne
         };
-        
-        console.log('Nouveau message à insérer:', newMessage);
         
         // Insérer le nouveau message
         const result = await messagesCollection.insertOne(newMessage);
-        console.log('Résultat de l\'insertion:', result);
         
-        res.json(newMessage);
+        res.json({
+            ...newMessage,
+            _id: result.insertedId
+        });
     } catch (error) {
-        console.error('Erreur détaillée lors du partage du message:', error);
+        console.error('Erreur lors du partage du message:', error);
         res.status(500).json({ message: 'Erreur serveur' });
     }
 });
