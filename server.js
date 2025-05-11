@@ -582,7 +582,6 @@ app.post('/messages/:id/comment', async (req, res) => {
 });
 
 // Route pour partager un message
-// Route pour partager un message - Version corrigée minimale
 app.post('/messages/:id/share', async (req, res) => {
     try {
         if (!req.session.userId) {
@@ -616,6 +615,7 @@ app.post('/messages/:id/share', async (req, res) => {
         const originalMessage = await messagesCollection.findOne({ _id: messageId });
         
         if (!originalMessage) {
+            console.log('Message original non trouvé avec ID:', messageId);
             return res.status(404).json({ message: 'Message non trouvé' });
         }
         
@@ -623,10 +623,28 @@ app.post('/messages/:id/share', async (req, res) => {
         const date = now.toLocaleDateString('fr-FR');
         const hour = now.toLocaleTimeString('fr-FR');
         
+        // Examiner la structure des IDs existants dans la collection
+        const sampleMessages = await messagesCollection.find({}).limit(5).toArray();
+        console.log('Exemples d\'IDs existants:', sampleMessages.map(msg => ({ id: msg._id, type: typeof msg._id })));
+        
         // Créer le nouveau message partagé
         // Pour les IDs numériques, trouver le maximum actuel et incrémenter
-        const maxIdResult = await messagesCollection.find({}).sort({ _id: -1 }).limit(1).toArray();
-        const nextId = maxIdResult.length > 0 ? maxIdResult[0]._id + 1 : 1;
+        const maxIdResult = await messagesCollection.find({})
+            .sort({ _id: -1 })
+            .limit(10)
+            .toArray();
+        
+        console.log('Résultats de recherche du max ID:', maxIdResult.map(msg => ({ id: msg._id, type: typeof msg._id })));
+        
+        // Trouver le plus grand ID numérique
+        let nextId = 1;
+        for (const msg of maxIdResult) {
+            if (typeof msg._id === 'number') {
+                nextId = Math.max(nextId, msg._id + 1);
+            }
+        }
+        
+        console.log('Prochain ID à utiliser:', nextId);
         
         const newMessage = {
             _id: nextId,
@@ -640,12 +658,15 @@ app.post('/messages/:id/share', async (req, res) => {
             shared: messageId // Stocker l'ID comme nombre
         };
         
+        console.log('Nouveau message à insérer:', newMessage);
+        
         // Insérer le nouveau message
         const result = await messagesCollection.insertOne(newMessage);
+        console.log('Résultat de l\'insertion:', result);
         
         res.json(newMessage);
     } catch (error) {
-        console.error('Erreur lors du partage du message:', error);
+        console.error('Erreur détaillée lors du partage du message:', error);
         res.status(500).json({ message: 'Erreur serveur' });
     }
 });
