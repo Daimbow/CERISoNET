@@ -6,6 +6,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http';
 import { MessageWallComponent } from './components/message-wall/message-wall.component';
 import { NotificationsComponent } from './components/notifications/notifications.component';
+import { HashtagManagerComponent } from './components/hashtag-manager/hashtag-manager.component';
 import { WebSocketService } from './services/websocket.service';
 
 @Component({
@@ -18,7 +19,8 @@ import { WebSocketService } from './services/websocket.service';
         ReactiveFormsModule, 
         HttpClientModule, 
         MessageWallComponent,
-        NotificationsComponent
+        NotificationsComponent,
+	HashtagManagerComponent
     ],
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.scss']
