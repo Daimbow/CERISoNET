@@ -13,6 +13,8 @@ import crypto from 'crypto';
 import dotenv from 'dotenv';
 import { WebSocketServer } from 'ws';
 import { ObjectId } from 'mongodb';
+import axios from 'axios';
+
 
 
 
@@ -727,4 +729,64 @@ app.post('/update-connection-status', async (req, res) => {
         console.error('Erreur lors de la mise à jour du statut de connexion:', error);
         res.status(500).json({ message: 'Erreur serveur' });
     }
+});
+
+app.get('/api/hashtags', async (req, res) => {
+  try {
+    const response = await axios.get('http://localhost:8080/api/hashtags');
+    res.json(response.data);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des hashtags:', error);
+    res.status(500).json({ message: 'Erreur serveur' });
+  }
+});
+
+app.get('/api/hashtags/:id', async (req, res) => {
+  try {
+    const response = await axios.get(`http://localhost:8080/api/hashtags/${req.params.id}`);
+    res.json(response.data);
+  } catch (error) {
+    console.error(`Erreur lors de la récupération du hashtag ${req.params.id}:`, error);
+    res.status(error.response?.status || 500).json({ message: 'Erreur serveur' });
+  }
+});
+
+app.post('/api/hashtags', async (req, res) => {
+  try {
+    const response = await axios.post('http://localhost:8080/api/hashtags', req.body);
+    res.status(201).json(response.data);
+  } catch (error) {
+    console.error('Erreur lors de la création du hashtag:', error);
+    res.status(500).json({ message: 'Erreur serveur' });
+  }
+});
+
+app.put('/api/hashtags/:id', async (req, res) => {
+  try {
+    const response = await axios.put(`http://localhost:8080/api/hashtags/${req.params.id}`, req.body);
+    res.json(response.data);
+  } catch (error) {
+    console.error(`Erreur lors de la mise à jour du hashtag ${req.params.id}:`, error);
+    res.status(error.response?.status || 500).json({ message: 'Erreur serveur' });
+  }
+});
+
+app.delete('/api/hashtags/:id', async (req, res) => {
+  try {
+    await axios.delete(`http://localhost:8080/api/hashtags/${req.params.id}`);
+    res.status(204).send();
+  } catch (error) {
+    console.error(`Erreur lors de la suppression du hashtag ${req.params.id}:`, error);
+    res.status(error.response?.status || 500).json({ message: 'Erreur serveur' });
+  }
+});
+
+app.get('/api/hashtags/:id/position/:word', async (req, res) => {
+  try {
+    const response = await axios.get(`http://localhost:8080/api/hashtags/${req.params.id}/position/${req.params.word}`);
+    res.json(response.data);
+  } catch (error) {
+    console.error(`Erreur lors de la recherche de position du mot ${req.params.word}:`, error);
+    res.status(error.response?.status || 500).json({ message: 'Erreur serveur' });
+  }
 });

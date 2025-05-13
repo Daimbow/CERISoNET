@@ -90,24 +90,25 @@ export class HashtagManagerComponent implements OnInit {
     });
   }
 
-  deleteHashtag(id: number): void {
-    if (!id) return;
-    
-    this.hashtagService.deleteHashtag(id).subscribe({
-      next: () => {
-        this.loadHashtags();
-        if (this.selectedHashtag && this.selectedHashtag.id === id) {
-          this.selectedHashtag = null;
-        }
-        if (this.searchHashtag && this.searchHashtag.id === id) {
-          this.searchHashtag = null;
-        }
-      },
-      error: (error) => {
-        console.error('Erreur lors de la suppression du hashtag', error);
+deleteHashtag(id: number): void {
+  if (!id) return;
+  
+  // Plus besoin de convertir en String
+  this.hashtagService.deleteHashtag(id).subscribe({
+    next: () => {
+      this.loadHashtags();
+      if (this.selectedHashtag && this.selectedHashtag.id === id) {
+        this.selectedHashtag = null;
       }
-    });
-  }
+      if (this.searchHashtag && this.searchHashtag.id === id) {
+        this.searchHashtag = null;
+      }
+    },
+    error: (error) => {
+      console.error('Erreur lors de la suppression du hashtag', error);
+    }
+  });
+}
 
   findWordPosition(hashtag: any): void {
     this.searchHashtag = { ...hashtag };
