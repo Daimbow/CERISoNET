@@ -1,94 +1,58 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HashtagService } from '../../services/hashtag.service';
+import { NgbModalModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-hashtag-manager',
   standalone: true,
-  imports: [CommonModule, FormsModule],
-  template: `
-    <div class="card">
-      <div class="card-header">
-        <h5 class="mb-0">Gestionnaire de Hashtags</h5>
-      </div>
-      <div class="card-body">
-        <!-- Formulaire de création -->
-        <div class="mb-3">
-          <h6>Créer un hashtag</h6>
-          <div class="input-group mb-2">
-            <input type="text" class="form-control" placeholder="Nom du hashtag" [(ngModel)]="newHashtag.name">
-            <input type="number" class="form-control" placeholder="Utilisations" [(ngModel)]="newHashtag.usageCount">
-            <button class="btn btn-primary" (click)="createHashtag()">Créer</button>
-          </div>
-        </div>
-        
-        <!-- Liste des hashtags -->
-        <div class="mb-3">
-          <h6>Hashtags enregistrés</h6>
-          <div class="list-group">
-            <div *ngFor="let hashtag of hashtags" class="list-group-item list-group-item-action">
-              <div class="d-flex w-100 justify-content-between">
-                <h6 class="mb-1">#{{ hashtag.name }}</h6>
-                <small>{{ hashtag.usageCount }} utilisations</small>
-              </div>
-              <div class="mt-2">
-                <button class="btn btn-sm btn-outline-primary me-1" (click)="selectHashtag(hashtag)">Éditer</button>
-                <button class="btn btn-sm btn-outline-info me-1" (click)="findWordPosition(hashtag)">Position mot</button>
-                <button class="btn btn-sm btn-outline-danger" (click)="deleteHashtag(hashtag.id)">Supprimer</button>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Modification d'un hashtag -->
-        <div *ngIf="selectedHashtag" class="mb-3">
-          <h6>Modifier le hashtag</h6>
-          <div class="input-group mb-2">
-            <input type="text" class="form-control" placeholder="Nom" [(ngModel)]="selectedHashtag.name">
-            <input type="number" class="form-control" placeholder="Utilisations" [(ngModel)]="selectedHashtag.usageCount">
-            <button class="btn btn-success me-1" (click)="updateHashtag()">Enregistrer</button>
-            <button class="btn btn-secondary" (click)="selectedHashtag = null">Annuler</button>
-          </div>
-        </div>
-        
-        <!-- Recherche position d'un mot -->
-        <div *ngIf="searchHashtag" class="mb-3">
-          <h6>Rechercher position d'un mot dans #{{ searchHashtag.name }}</h6>
-          <div class="input-group mb-2">
-            <input type="text" class="form-control" placeholder="Mot à chercher" [(ngModel)]="wordToFind">
-            <button class="btn btn-info me-1" (click)="searchWord()">Rechercher</button>
-            <button class="btn btn-secondary" (click)="searchHashtag = null">Annuler</button>
-          </div>
-          <div *ngIf="wordPosition !== null" class="alert alert-info">
-            Position du mot "{{ wordToFind }}": {{ wordPosition }}
-          </div>
-        </div>
-      </div>
-    </div>
-  `
+  imports: [CommonModule, FormsModule, NgbModalModule],
+  templateUrl: './hashtag-manager.component.html',
+  styleUrls: ['./hashtag-manager.component.css']
 })
 export class HashtagManagerComponent implements OnInit {
+  @ViewChild('hashtagModal') hashtagModal: any;
+  
   hashtags: any[] = [];
   newHashtag = { name: '', usageCount: 0 };
   selectedHashtag: any = null;
   searchHashtag: any = null;
   wordToFind: string = '';
   wordPosition: number | null = null;
+  isLoading: boolean = false;
 
-  constructor(private hashtagService: HashtagService) { }
+  constructor(
+    private hashtagService: HashtagService,
+    private modalService: NgbModal
+  ) { }
 
   ngOnInit(): void {
+    // Ne pas charger les hashtags ici, mais seulement quand l'utilisateur ouvre la modale
+  }
+
+  openHashtagManager(): void {
+    this.modalService.open(this.hashtagModal, { centered: true, size: 'lg' }).result.then(
+      (result) => {
+        // Modal fermée
+      },
+      (reason) => {
+        // Modal rejetée
+      }
+    );
     this.loadHashtags();
   }
 
   loadHashtags(): void {
+    this.isLoading = true;
     this.hashtagService.getAllHashtags().subscribe({
       next: (hashtags) => {
         this.hashtags = hashtags;
+        this.isLoading = false;
       },
       error: (error) => {
         console.error('Erreur lors du chargement des hashtags', error);
+        this.isLoading = false;
       }
     });
   }
@@ -134,6 +98,9 @@ export class HashtagManagerComponent implements OnInit {
         this.loadHashtags();
         if (this.selectedHashtag && this.selectedHashtag.id === id) {
           this.selectedHashtag = null;
+        }
+        if (this.searchHashtag && this.searchHashtag.id === id) {
+          this.searchHashtag = null;
         }
       },
       error: (error) => {

@@ -1,1 +1,100 @@
-<p>hashtag-manager works!</p>
+<!-- Bouton pour ouvrir le gestionnaire de hashtags -->
+<button class="btn btn-outline-primary btn-sm" (click)="openHashtagManager()">
+  <i class="bi bi-hash me-1"></i>Gérer les hashtags
+</button>
+
+<!-- Template pour la fenêtre modale -->
+<ng-template #hashtagModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Gestionnaire de Hashtags</h5>
+    <button type="button" class="btn-close" aria-label="Fermer" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body">
+    <!-- Formulaire de création -->
+    <div class="mb-3">
+      <h6>Créer un hashtag</h6>
+      <div class="input-group mb-2">
+        <span class="input-group-text">#</span>
+        <input type="text" class="form-control" placeholder="Nom du hashtag" [(ngModel)]="newHashtag.name">
+        <input type="number" class="form-control" placeholder="Utilisations" [(ngModel)]="newHashtag.usageCount">
+        <button class="btn btn-primary" (click)="createHashtag()">
+          <i class="bi bi-plus-lg"></i> Créer
+        </button>
+      </div>
+    </div>
+    
+    <!-- Liste des hashtags -->
+    <div class="mb-3">
+      <h6>Hashtags enregistrés</h6>
+      
+      <div *ngIf="isLoading" class="d-flex justify-content-center my-3">
+        <div class="spinner-border spinner-border-sm text-primary" role="status">
+          <span class="visually-hidden">Chargement...</span>
+        </div>
+      </div>
+      
+      <div *ngIf="!isLoading && hashtags.length === 0" class="alert alert-info py-2">
+        Aucun hashtag trouvé. Créez votre premier hashtag!
+      </div>
+      
+      <div class="list-group">
+        <div *ngFor="let hashtag of hashtags" class="list-group-item list-group-item-action">
+          <div class="d-flex w-100 justify-content-between">
+            <h6 class="mb-1">#{{ hashtag.name }}</h6>
+            <span class="badge bg-primary rounded-pill">{{ hashtag.usageCount }}</span>
+          </div>
+          <small class="text-muted" *ngIf="hashtag.lastUsed">
+            Dernière utilisation: {{ hashtag.lastUsed | date:'short' }}
+          </small>
+          <div class="d-flex mt-2">
+            <button class="btn btn-sm btn-outline-primary me-1" (click)="selectHashtag(hashtag)">
+              <i class="bi bi-pencil"></i> Éditer
+            </button>
+            <button class="btn btn-sm btn-outline-info me-1" (click)="findWordPosition(hashtag)">
+              <i class="bi bi-search"></i> Rechercher
+            </button>
+            <button class="btn btn-sm btn-outline-danger" (click)="deleteHashtag(hashtag.id)">
+              <i class="bi bi-trash"></i> Supprimer
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Modification d'un hashtag -->
+    <div *ngIf="selectedHashtag" class="mb-3">
+      <h6>Modifier le hashtag</h6>
+      <div class="input-group mb-2">
+        <span class="input-group-text">#</span>
+        <input type="text" class="form-control" placeholder="Nom" [(ngModel)]="selectedHashtag.name">
+        <input type="number" class="form-control" placeholder="Utilisations" [(ngModel)]="selectedHashtag.usageCount">
+        <button class="btn btn-success" (click)="updateHashtag()">
+          <i class="bi bi-check-lg"></i> Enregistrer
+        </button>
+        <button class="btn btn-secondary" (click)="selectedHashtag = null">
+          <i class="bi bi-x-lg"></i> Annuler
+        </button>
+      </div>
+    </div>
+    
+    <!-- Recherche position d'un mot -->
+    <div *ngIf="searchHashtag" class="mb-3">
+      <h6>Rechercher position d'un mot dans #{{ searchHashtag.name }}</h6>
+      <div class="input-group mb-2">
+        <input type="text" class="form-control" placeholder="Mot à chercher" [(ngModel)]="wordToFind">
+        <button class="btn btn-info" (click)="searchWord()">
+          <i class="bi bi-search"></i> Rechercher
+        </button>
+        <button class="btn btn-secondary" (click)="searchHashtag = null">
+          <i class="bi bi-x-lg"></i> Annuler
+        </button>
+      </div>
+      <div *ngIf="wordPosition !== null" class="alert alert-info py-2">
+        Position du mot "{{ wordToFind }}": {{ wordPosition }}
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="modal.close()">Fermer</button>
+  </div>
+</ng-template>

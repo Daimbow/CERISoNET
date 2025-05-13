@@ -1,0 +1,71 @@
+:host {
+  display: inline-block;
+}
+
+/* Styles pour la fenêtre modale qui se fondent bien dans le design actuel */
+:host ::ng-deep .modal-content {
+  border-radius: 8px;
+  border: none;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+:host ::ng-deep .modal-header {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+:host ::ng-deep .modal-footer {
+  border-top: 1px solid #f0f0f0;
+}
+
+/* Adaptation des couleurs au thème principal */
+:host ::ng-deep .btn-primary {
+  background-color: #ed6261;
+  border-color: #ed6261;
+}
+
+:host ::ng-deep .btn-primary:hover {
+  background-color: #e84a49;
+  border-color: #e84a49;
+}
+
+:host ::ng-deep .btn-outline-primary {
+  color: #ed6261;
+  border-color: #ed6261;
+}
+
+:host ::ng-deep .btn-outline-primary:hover {
+  background-color: #ed6261;
+  color: white;
+}
+
+:host ::ng-deep .form-control:focus {
+  border-color: rgba(237, 98, 97, 0.5);
+  box-shadow: 0 0 0 0.25rem rgba(237, 98, 97, 0.25);
+}
+
+:host ::ng-deep .badge.bg-primary {
+  background-color: #ed6261 !important;
+}
+
+/* Style pour les éléments de la liste */
+:host ::ng-deep .list-group-item {
+  transition: all 0.2s ease;
+}
+
+:host ::ng-deep .list-group-item:hover {
+  background-color: #f8f9fa;
+}
+
+.btn-outline-primary {
+  color: #ed6261;
+  border-color: #ed6261;
+}
+
+.btn-outline-primary:hover {
+  background-color: #ed6261;
+  color: white;
+}
+
+.spinner-border.text-primary {
+  color: #ed6261 !important;
+}
