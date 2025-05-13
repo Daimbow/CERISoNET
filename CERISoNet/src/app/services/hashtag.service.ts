@@ -17,13 +17,12 @@ interface WordPosition {
   providedIn: 'root'
 })
 export class HashtagService {
-  // Assurez-vous de mettre à jour le port pour correspondre à celui de votre service Quarkus
-  private apiUrl = 'https://pedago.univ-avignon.fr:8080/api/hashtags';
+  private apiUrl = 'https://pedago.univ-avignon.fr:8083/api/hashtags'; // À ajuster selon votre configuration
 
   constructor(private http: HttpClient) { }
 
   // GET - Récupérer un hashtag par ID
-  getHashtag(id: number): Observable<Hashtag> {
+  getHashtag(id: string): Observable<Hashtag> {
     return this.http.get<Hashtag>(`${this.apiUrl}/${id}`);
   }
 
@@ -38,17 +37,17 @@ export class HashtagService {
   }
 
   // PUT - Mettre à jour un hashtag
-  updateHashtag(id: number, hashtag: Hashtag): Observable<Hashtag> {
+  updateHashtag(id: string, hashtag: Hashtag): Observable<Hashtag> {
     return this.http.put<Hashtag>(`${this.apiUrl}/${id}`, hashtag);
   }
 
   // DELETE - Supprimer un hashtag
-  deleteHashtag(id: number): Observable<void> {
+  deleteHashtag(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
   // Utiliser l'algorithme pour trouver la position d'un mot
-  findWordPosition(id: number, word: string): Observable<WordPosition> {
+  findWordPosition(id: string, word: string): Observable<WordPosition> {
     return this.http.get<WordPosition>(`${this.apiUrl}/${id}/position/${word}`);
   }
 }
