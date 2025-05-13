@@ -1,9 +1,12 @@
 package fr.univ.avignon;
+
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @Path("/api/hashtags")
 @Produces(MediaType.APPLICATION_JSON)
@@ -53,6 +56,8 @@ public class HashtagResource {
     @Path("/{id}/position/{word}")
     public Response findWordPosition(@PathParam("id") String id, @PathParam("word") String word) {
         int position = service.findWordPosition(id, word);
-        return Response.ok().entity("{\"position\": " + position + "}").build();
+        Map<String, Integer> result = new HashMap<>();
+        result.put("position", position);
+        return Response.ok(result).build();
     }
 }
