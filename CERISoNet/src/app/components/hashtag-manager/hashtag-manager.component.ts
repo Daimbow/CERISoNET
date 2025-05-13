@@ -21,6 +21,7 @@ export class HashtagManagerComponent implements OnInit {
   wordToFind: string = '';
   wordPosition: number | null = null;
   isLoading: boolean = false;
+  syncMessage: string = '';
 
   constructor(
     private hashtagService: HashtagService,
@@ -60,6 +61,11 @@ export class HashtagManagerComponent implements OnInit {
   createHashtag(): void {
     if (!this.newHashtag.name.trim()) return;
     
+    // S'assurer que le nom du hashtag commence par #
+    if (!this.newHashtag.name.startsWith('#')) {
+      this.newHashtag.name = '#' + this.newHashtag.name;
+    }
+    
     this.hashtagService.createHashtag(this.newHashtag).subscribe({
       next: () => {
         this.loadHashtags();
@@ -79,6 +85,11 @@ export class HashtagManagerComponent implements OnInit {
   updateHashtag(): void {
     if (!this.selectedHashtag || !this.selectedHashtag.name.trim()) return;
     
+    // S'assurer que le nom du hashtag commence par #
+    if (!this.selectedHashtag.name.startsWith('#')) {
+      this.selectedHashtag.name = '#' + this.selectedHashtag.name;
+    }
+    
     this.hashtagService.updateHashtag(this.selectedHashtag.id, this.selectedHashtag).subscribe({
       next: () => {
         this.loadHashtags();
@@ -90,25 +101,24 @@ export class HashtagManagerComponent implements OnInit {
     });
   }
 
-deleteHashtag(id: number): void {
-  if (!id) return;
-  
-  // Plus besoin de convertir en String
-  this.hashtagService.deleteHashtag(id).subscribe({
-    next: () => {
-      this.loadHashtags();
-      if (this.selectedHashtag && this.selectedHashtag.id === id) {
-        this.selectedHashtag = null;
+  deleteHashtag(id: string): void {
+    if (!id) return;
+    
+    this.hashtagService.deleteHashtag(id).subscribe({
+      next: () => {
+        this.loadHashtags();
+        if (this.selectedHashtag && this.selectedHashtag.id === id) {
+          this.selectedHashtag = null;
+        }
+        if (this.searchHashtag && this.searchHashtag.id === id) {
+          this.searchHashtag = null;
+        }
+      },
+      error: (error) => {
+        console.error('Erreur lors de la suppression du hashtag', error);
       }
-      if (this.searchHashtag && this.searchHashtag.id === id) {
-        this.searchHashtag = null;
-      }
-    },
-    error: (error) => {
-      console.error('Erreur lors de la suppression du hashtag', error);
-    }
-  });
-}
+    });
+  }
 
   findWordPosition(hashtag: any): void {
     this.searchHashtag = { ...hashtag };
@@ -127,6 +137,23 @@ deleteHashtag(id: number): void {
       error: (error) => {
         console.error('Erreur lors de la recherche', error);
         this.wordPosition = -1;
+      }
+    });
+  }
+  
+  synchronizeHashtags(): void {
+    this.isLoading = true;
+    this.syncMessage = 'Synchronisation en cours...';
+    
+    this.hashtagService.synchronizeHashtags().subscribe({
+      next: (response) => {
+        this.syncMessage = 'Synchronisation réussie!';
+        this.loadHashtags();
+      },
+      error: (error) => {
+        console.error('Erreur lors de la synchronisation', error);
+        this.syncMessage = 'Erreur lors de la synchronisation';
+        this.isLoading = false;
       }
     });
   }

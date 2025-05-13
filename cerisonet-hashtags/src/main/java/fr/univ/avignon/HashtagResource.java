@@ -7,6 +7,7 @@ import jakarta.ws.rs.core.Response;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
+import org.bson.Document;
 
 @Path("/api/hashtags")
 @Produces(MediaType.APPLICATION_JSON)
@@ -59,5 +60,35 @@ public class HashtagResource {
         Map<String, Integer> result = new HashMap<>();
         result.put("position", position);
         return Response.ok(result).build();
+    }
+    
+    // Synchroniser les hashtags depuis les messages
+    @POST
+    @Path("/sync")
+    public Response synchronizeHashtags() {
+        service.synchronizeHashtagsFromMessages();
+        return Response.ok().entity(Map.of("success", true, "message", "Hashtags synchronized successfully")).build();
+    }
+    
+    // Trouver des messages par hashtag
+    @GET
+    @Path("/messages/{hashtag}")
+    public Response getMessagesByHashtag(@PathParam("hashtag") String hashtag) {
+        List<Document> messages = service.findMessagesByHashtag("#" + hashtag.replace("#", ""));
+        return Response.ok(messages).build();
+    }
+
+    // Ajouter à HashtagResource.java
+    @GET
+    @Path("/popular")
+    public Response getPopularHashtags(@QueryParam("limit") @DefaultValue("10") int limit) {
+        List<Hashtag> hashtags = service.findAll();
+        // Trier par nombre d'utilisations décroissant
+        hashtags.sort((a, b) -> Integer.compare(b.usageCount, a.usageCount));
+        // Limiter le nombre de résultats
+        if (hashtags.size() > limit) {
+            hashtags = hashtags.subList(0, limit);
+        }
+        return Response.ok(hashtags).build();
     }
 }
