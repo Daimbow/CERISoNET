@@ -12,7 +12,8 @@ import com.mongodb.client.MongoCursor;
 import org.bson.Document;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
-import io.quarkus.mongodb.MongoClient;
+import com.mongodb.client.MongoClient;
+
 
 @ApplicationScoped
 public class HashtagService {
