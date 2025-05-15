@@ -148,10 +148,23 @@ export class AppComponent implements OnInit, OnDestroy {
         this.wsService.notifyLogout();
         this.wsService.disconnect();
         
-        // Idéalement, envoyer une requête au serveur pour déconnecter l'utilisateur
-        this.isLoggedIn = false;
-        this.username = '';
-        localStorage.removeItem('username');
-        this.showNotificationMessage('Vous avez été déconnecté.', 'success');
+        // Appeler la route de déconnexion du serveur
+        this.http.post('https://pedago.univ-avignon.fr:3223/logout', {}).subscribe({
+            next: (response) => {
+                // Mettre à jour l'état local après confirmation du serveur
+                this.isLoggedIn = false;
+                this.username = '';
+                localStorage.removeItem('username');
+                this.showNotificationMessage('Vous avez été déconnecté.', 'success');
+            },
+            error: (error) => {
+                console.error('Erreur lors de la déconnexion:', error);
+                // Même en cas d'erreur, déconnecter localement
+                this.isLoggedIn = false;
+                this.username = '';
+                localStorage.removeItem('username');
+                this.showNotificationMessage('Déconnexion locale uniquement.', 'error');
+            }
+        });
     }
 }
