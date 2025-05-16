@@ -10,12 +10,15 @@ export class MessageService {
 
   constructor(private http: HttpClient) { }
 
-  // Récupérer les messages avec pagination et filtres
+  // On recupere les messages avec pagination et filtres
   getMessages(page: number = 1, limit: number = 5, options: any = {}): Observable<any> {
+    
+    // on construit les parametres
     let params = new HttpParams()
       .set('page', page.toString())
       .set('limit', limit.toString());
     
+    // on ajoute les filtres
     if (options.sortBy) {
       params = params.set('sortBy', options.sortBy);
     }
@@ -28,20 +31,21 @@ export class MessageService {
       params = params.set('filterHashtag', options.filterHashtag);
     }
     
+    // on fait la requete
     return this.http.get<any>(`${this.apiUrl}/messages`, { params });
   }
 
-  // Liker un message
+  // pour liker un message
   likeMessage(messageId: number): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/messages/${messageId}/like`, {});
   }
 
-  // Commenter un message
+  // pour commenter un message
   commentMessage(messageId: number, text: string): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/messages/${messageId}/comment`, { text });
   }
 
-  // Partager un message
+  // pour partager un message
   shareMessage(messageId: number, body: string): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/messages/${messageId}/share`, { body });
   }
