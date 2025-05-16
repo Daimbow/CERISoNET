@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgbModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { MessageService } from '../../services/message.service';
-import { UserService } from '../../services/user.service';
 import { WebSocketService } from '../../services/websocket.service';
 import { Subscription } from 'rxjs';
 
@@ -66,7 +65,6 @@ export class MessageWallComponent implements OnInit, OnDestroy {
 
     constructor(
         private messageService: MessageService,
-        private userService: UserService,
         private wsService: WebSocketService
     ) { }
 
