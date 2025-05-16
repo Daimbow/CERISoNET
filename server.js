@@ -103,25 +103,25 @@ wss.on('connection', (ws, req) => {
     // URL factice pour obtenir l'id de l'user de wss:
     const url = new URL(req.url, 'https://pedago.univ-avignon.fr');
     const userId = url.searchParams.get('userId');
-    
+
     console.log(`Nouvelle connexion WebSocket de l'utilisateur: ${userId}`);
-    
+
     // On enregistre la connexion pour stocker la réf de connexion et l'id connecté
     if (userId) {
         connectedClients.set(userId, ws);
     }
-    
+
     // Welcome 
     ws.send(JSON.stringify({
         type: 'info',
         message: 'Connexion WebSocket établie'
     }));
-    
+
     // On écoute ce que fais l'utilisateur sur CeriSoNET
     ws.on('message', async (message) => {
         try {
             const data = JSON.parse(message);
-            
+
             // On traite les différents types de messages
             switch (data.type) {
                 case 'connection':
@@ -135,7 +135,7 @@ wss.on('connection', (ws, req) => {
                         }
                     }, userId);
                     break;
-                    
+
                 case 'like':
 
                     // On notifie tout le monde qu'un utilisateur a aimé un message
@@ -148,7 +148,7 @@ wss.on('connection', (ws, req) => {
                         }
                     }, userId);
                     break;
-                    
+
                 case 'comment':
 
                     // On notifie tout le monde qu'un utilisateur a commenté un message
@@ -162,7 +162,7 @@ wss.on('connection', (ws, req) => {
                         }
                     }, userId);
                     break;
-                    
+
                 case 'share':
 
                     // On notifie tout le monde qu'un utilisateur a partagé un message
@@ -175,7 +175,7 @@ wss.on('connection', (ws, req) => {
                         }
                     }, userId);
                     break;
-                    
+
                 case 'logout':
 
                     // On notifie tout le monde qu'un utilisateur s'est déconnecté
@@ -187,7 +187,7 @@ wss.on('connection', (ws, req) => {
                         }
                     }, userId);
                     break;
-                    
+
                 default:
                     console.log(`Type de message non connu: ${data.type}`);
             }
@@ -195,11 +195,11 @@ wss.on('connection', (ws, req) => {
             console.error('Erreur lors du traitement du message WS:', error);
         }
     });
-    
+
     // On traite la fermeture du websocket de l'user
     ws.on('close', () => {
         console.log(`Connexion WebSocket fermée pour l'utilisateur: ${userId}`);
-        
+
         // Supprimer la connexion
         if (userId) {
             connectedClients.delete(userId);
@@ -210,7 +210,7 @@ wss.on('connection', (ws, req) => {
 // On diffuse un message à tous les clients connectés sauf l'expéditeur
 function broadcastAll(message, excludeUserId) {
     const messageStr = JSON.stringify(message);
-    
+
     connectedClients.forEach((client, id) => {
 
         // readystate = 1 veux dire que le websocket est ouvert 
@@ -312,7 +312,7 @@ app.get('/messages', async (req, res) => {
 
         // Filtre pour la requête récupére toutes les données qu'on a bessoin
         let query = {};
-        
+
         // On regarde si on dois afficher les postes de l'utilisateur ou de tout le monde
         if (filterOwner === 'true') {
 
@@ -322,7 +322,7 @@ app.get('/messages', async (req, res) => {
                 'SELECT id FROM fredouil.compte WHERE mail = $1',
                 [req.session.userId]
             );
-            
+
             if (userResult.rows.length > 0) {
 
                 // Filtre mongodb
@@ -336,14 +336,14 @@ app.get('/messages', async (req, res) => {
                 'SELECT id FROM fredouil.compte WHERE mail = $1',
                 [req.session.userId]
             );
-            
+
             if (userResult.rows.length > 0) {
 
                 // On récupère l'ID des autres utilisateurs différent de celui connecté
                 query.createdBy = { $ne: userResult.rows[0].id };
             }
         }
-        
+
         // On filtre le hastag si demandé 
         if (filterHashtag) {
 
@@ -371,9 +371,9 @@ app.get('/messages', async (req, res) => {
 
             // nombre de commentaire 
             case 'comments':
-                    sortOptions = { commentsCount: -1 };
-                    break;
-            
+                sortOptions = { commentsCount: -1 };
+                break;
+
             // message récent
             default:
                 sortOptions = { date: -1, hour: -1 };
@@ -381,7 +381,7 @@ app.get('/messages', async (req, res) => {
 
         // On compte le nombre de messages par rapport au filtre
         const total = await messagesCollection.countDocuments(query);
-        
+
         // framework d'agrégation, pour faire la requête
         const messages = await messagesCollection.aggregate([
 
@@ -389,13 +389,15 @@ app.get('/messages', async (req, res) => {
             { $match: query },
 
             // On calul le nombre de commentaire et ajout du champ dans les "copies"
-            { $addFields: { 
-                commentsCount: { 
-                    $size: { 
-                        $ifNull: ["$comments", []] 
-                    } 
-                } 
-            }},
+            {
+                $addFields: {
+                    commentsCount: {
+                        $size: {
+                            $ifNull: ["$comments", []]
+                        }
+                    }
+                }
+            },
 
             // On tri
             { $sort: sortOptions },
@@ -416,7 +418,7 @@ app.get('/messages', async (req, res) => {
                     'SELECT nom, prenom, pseudo, avatar FROM fredouil.compte WHERE id = $1',
                     [message.createdBy]
                 );
-                
+
                 // On enrichi le message les infos concernant la personne qui commente
                 const enrichedMessage = {
                     ...message,
@@ -424,16 +426,16 @@ app.get('/messages', async (req, res) => {
                     authorPseudo: authorResult.rows.length > 0 ? authorResult.rows[0].pseudo : 'Utilisateur inconnu',
                     authorAvatar: authorResult.rows.length > 0 ? authorResult.rows[0].avatar : null
                 };
-                
+
                 // Si c'est un message partagé, on récupérer le message d'origine
                 if (message.shared) {
                     try {
 
                         // On utilise l'id pour récupérer le message partagé mais on le convertis avant
-                        const sharedMessage = await messagesCollection.findOne({ 
-                            _id: typeof message.shared === 'string' ? parseInt(message.shared, 10) : message.shared 
+                        const sharedMessage = await messagesCollection.findOne({
+                            _id: typeof message.shared === 'string' ? parseInt(message.shared, 10) : message.shared
                         });
-                        
+
                         if (sharedMessage) {
 
                             // On récupére les infos de l'auteur du message partagé
@@ -441,7 +443,7 @@ app.get('/messages', async (req, res) => {
                                 'SELECT nom, prenom, pseudo, avatar FROM fredouil.compte WHERE id = $1',
                                 [sharedMessage.createdBy]
                             );
-                            
+
                             // On enrichi le message les infos concernant la personne qui a partagé
                             enrichedMessage.sharedMessage = {
                                 ...sharedMessage,
@@ -454,16 +456,16 @@ app.get('/messages', async (req, res) => {
                         console.error('Erreur pendant la récupération du message partagé:', error);
                     }
                 }
-                
+
                 // Et on enrichi les informations des commentaires avec les infos des auteurs
                 if (message.comments && message.comments.length > 0) {
                     enrichedMessage.comments = await Promise.all(message.comments.map(async (comment) => {
-                        
+
                         const commentAuthorResult = await pool.query(
                             'SELECT nom, prenom, pseudo, avatar FROM fredouil.compte WHERE id = $1',
                             [comment.commentedBy]
                         );
-                        
+
                         return {
                             ...comment,
                             authorName: authorResult.rows.length > 0 ? `${authorResult.rows[0].nom} ${authorResult.rows[0].prenom}` : 'Utilisateur inconnu',
@@ -472,7 +474,7 @@ app.get('/messages', async (req, res) => {
                         };
                     }));
                 }
-                
+
                 return enrichedMessage;
             } catch (error) {
                 console.error('Erreur pendant l\'enrichissement du message:', error);
@@ -501,36 +503,36 @@ app.post('/messages/:id/like', async (req, res) => {
         if (!req.session.userId) {
             return res.status(401).json({ message: 'Non autorisé' });
         }
-        
+
         // On récupére l'id de l'utilisateur connecté
         const userResult = await pool.query(
             'SELECT id FROM fredouil.compte WHERE mail = $1',
             [req.session.userId]
         );
 
-        
+
         if (userResult.rows.length === 0) {
             return res.status(404).json({ message: 'Utilisateur pas trouvé' });
         }
-        
+
         // On recupere le message
         const db = mongoose.connection.db;
         const messagesCollection = db.collection('CERISoNet');
-        
+
         // On recupere l'id du message
         const messageId = parseInt(req.params.id, 10);
 
-        
+
         // On met à jour le nombre de likes du message
         const result = await messagesCollection.updateOne(
             { _id: messageId },
             { $inc: { likes: 1 } }
         );
-        
+
         if (result.modifiedCount === 0) {
             return res.status(404).json({ message: 'Message pas trouvé' });
         }
-        
+
         res.json({ success: true });
     } catch (error) {
         console.error('Erreur pendnat le like du message:', error);
@@ -547,27 +549,27 @@ app.post('/messages/:id/comment', async (req, res) => {
         if (!req.session.userId) {
             return res.status(401).json({ message: 'Non autorisé' });
         }
-        
+
         // commentaire à ajouter
         const { text } = req.body;
-        
+
         if (!text || !text.trim()) {
             return res.status(400).json({ message: 'Le commentaire dois pas être vide' });
         }
-        
+
         // On récupère l'id de l'utilisateur connecté
         const userResult = await pool.query(
             'SELECT id, nom, prenom, pseudo, avatar FROM fredouil.compte WHERE mail = $1',
             [req.session.userId]
         );
-        
+
         if (userResult.rows.length === 0) {
             return res.status(404).json({ message: 'Utilisateur pas trouvé' });
         }
-        
+
         // On recupere l'utilisateur
         const user = userResult.rows[0];
-        
+
         // On recupere le message
         const db = mongoose.connection.db;
         const messagesCollection = db.collection('CERISoNet');
@@ -576,20 +578,20 @@ app.post('/messages/:id/comment', async (req, res) => {
         const now = new Date();
         const date = now.toLocaleDateString('fr-FR');
         const hour = now.toLocaleTimeString('fr-FR');
-        
+
         // Création du commentaire
         const newComment = {
             text,
             commentedBy: user.id,
             date,
             hour,
-    
+
             // information qu'on ajoute pour le front-end
             authorName: `${user.nom} ${user.prenom}`,
             authorPseudo: user.pseudo,
             authorAvatar: user.avatar
         };
-        
+
         // On recupere l'id du message
         const messageId = parseInt(req.params.id, 10);
 
@@ -598,11 +600,11 @@ app.post('/messages/:id/comment', async (req, res) => {
             { _id: messageId },
             { $push: { comments: newComment } }
         );
-        
+
         if (result.modifiedCount === 0) {
             return res.status(404).json({ message: 'Message pas trouvé' });
         }
-        
+
         res.json(newComment);
     } catch (error) {
         console.error('Erreur pendant l\'ajout du commentaire:', error);
@@ -619,42 +621,42 @@ app.post('/messages/:id/share', async (req, res) => {
         if (!req.session.userId) {
             return res.status(401).json({ message: 'Non autorisé' });
         }
-        
+
         // Commentaire du partage
         const { body } = req.body;
-        
+
         // On récupére l'ID de l'utilisateur connecté
         const userResult = await pool.query(
             'SELECT id FROM fredouil.compte WHERE mail = $1',
             [req.session.userId]
         );
-        
+
         if (userResult.rows.length === 0) {
             return res.status(404).json({ message: 'Utilisateur pas trouvé' });
         }
-        
+
         const userId = userResult.rows[0].id;
-        
+
         // On recupere le message
         const db = mongoose.connection.db;
         const messagesCollection = db.collection('CERISoNet');
-        
+
         // On recupere l'id du message
         const messageId = parseInt(req.params.id, 10);
 
-        
+
         // On vérifie que le message à partage existe
         const originalMessage = await messagesCollection.findOne({ _id: messageId });
-        
+
         if (!originalMessage) {
             return res.status(404).json({ message: 'Message pas trouvé' });
         }
-        
+
         // On ajoute la date du partage
         const now = new Date();
         const date = now.toLocaleDateString('fr-FR');
         const hour = now.toLocaleTimeString('fr-FR');
-        
+
         // On créer le nouveau message (partagé)
         const newMessage = {
             date,
@@ -669,10 +671,10 @@ app.post('/messages/:id/share', async (req, res) => {
             shared: messageId
 
         };
-        
+
         // On insére le nouveau message
         const result = await messagesCollection.insertOne(newMessage);
-        
+
         // Et on evoie le nouveau message
         res.json({
             ...newMessage,
@@ -698,7 +700,7 @@ app.post('/logout', async (req, res) => {
                 'SELECT id FROM fredouil.compte WHERE mail = $1',
                 [req.session.userId]
             );
-            
+
             if (userResult.rows.length > 0) {
 
                 // On met à jour le statut de connexion
@@ -707,7 +709,7 @@ app.post('/logout', async (req, res) => {
                     [userResult.rows[0].id]
                 );
             }
-            
+
             // On supprime la session de stockage
             req.session.destroy(err => {
                 if (err) {
@@ -720,7 +722,7 @@ app.post('/logout', async (req, res) => {
                 res.status(200).json({ message: 'Déconnexion réussie' });
             });
         } else {
-        
+
             res.status(200).json({ message: 'Déjà déconnecté' });
         }
     } catch (error) {
@@ -739,86 +741,86 @@ app.post('/logout', async (req, res) => {
 
 // Route pour obtenir tous les hashtags
 app.get('/api/hashtags', async (req, res) => {
-  try {
-    
-    // On recupere tous les hashtags
-    const response = await axios.get('http://localhost:8080/api/hashtags');
-    res.json(response.data);
+    try {
 
-  } catch (error) {
-    console.error('Erreur pendant la récupération des hashtags:', error);
-    res.status(500).json({ message: 'Erreur serveur' });
-  }
+        // On recupere tous les hashtags
+        const response = await axios.get('http://localhost:8080/api/hashtags');
+        res.json(response.data);
+
+    } catch (error) {
+        console.error('Erreur pendant la récupération des hashtags:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
 });
 
 // Route pour obtenir un hashtag par ID
 app.get('/api/hashtags/:id', async (req, res) => {
-  try {
+    try {
 
-    // On recupere le hashtag
-    const response = await axios.get(`http://localhost:8080/api/hashtags/${req.params.id}`);
-    res.json(response.data);
+        // On recupere le hashtag
+        const response = await axios.get(`http://localhost:8080/api/hashtags/${req.params.id}`);
+        res.json(response.data);
 
-  } catch (error) {
-    console.error(`Erreur pendant la récupération du hashtag ${req.params.id}:`, error);
-    res.status(error.response?.status || 500).json({ message: 'Erreur serveur' });
-  }
+    } catch (error) {
+        console.error(`Erreur pendant la récupération du hashtag ${req.params.id}:`, error);
+        res.status(error.response?.status || 500).json({ message: 'Erreur serveur' });
+    }
 });
 
 // Route pour créer un nouveau hashtag
 app.post('/api/hashtags', async (req, res) => {
-  try {
-    
-    // On cree le hashtag
-    const response = await axios.post('http://localhost:8080/api/hashtags', req.body);
-    res.status(201).json(response.data);
-  } catch (error) {
+    try {
 
-    console.error('Erreur pendant la création du hashtag:', error);
-    res.status(500).json({ message: 'Erreur serveur' });
-  }
+        // On cree le hashtag
+        const response = await axios.post('http://localhost:8080/api/hashtags', req.body);
+        res.status(201).json(response.data);
+    } catch (error) {
+
+        console.error('Erreur pendant la création du hashtag:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
 });
 
 // Route pour mettre à jour un hashtag existant
 app.put('/api/hashtags/:id', async (req, res) => {
-  try {
+    try {
 
-    // On met a jour le hashtag
-    const response = await axios.put(`http://localhost:8080/api/hashtags/${req.params.id}`, req.body);
-    res.json(response.data);
-  } catch (error) {
+        // On met a jour le hashtag
+        const response = await axios.put(`http://localhost:8080/api/hashtags/${req.params.id}`, req.body);
+        res.json(response.data);
+    } catch (error) {
 
-    console.error(`Erreur pendant la mise à jour du hashtag ${req.params.id}:`, error);
-    res.status(error.response?.status || 500).json({ message: 'Erreur serveur' });
-  }
+        console.error(`Erreur pendant la mise à jour du hashtag ${req.params.id}:`, error);
+        res.status(error.response?.status || 500).json({ message: 'Erreur serveur' });
+    }
 });
 
 // Route pour supprimer un hashtag
 app.delete('/api/hashtags/:id', async (req, res) => {
-  try {
+    try {
 
-    // On supprime le hashtag
-    await axios.delete(`http://localhost:8080/api/hashtags/${req.params.id}`);
-    res.status(204).send();
-  } catch (error) {
+        // On supprime le hashtag
+        await axios.delete(`http://localhost:8080/api/hashtags/${req.params.id}`);
+        res.status(204).send();
+    } catch (error) {
 
-    console.error(`Erreur pendant la suppression du hashtag ${req.params.id}:`, error);
-    res.status(error.response?.status || 500).json({ message: 'Erreur serveur' });
-  }
+        console.error(`Erreur pendant la suppression du hashtag ${req.params.id}:`, error);
+        res.status(error.response?.status || 500).json({ message: 'Erreur serveur' });
+    }
 });
 
 // Route pour obtenir la position d'un mot dans un hashtag
 app.get('/api/hashtags/:id/position/:word', async (req, res) => {
-  try {
+    try {
 
-    // On recupere la position
-    const response = await axios.get(`http://localhost:8080/api/hashtags/${req.params.id}/position/${req.params.word}`);
-    res.json(response.data);
-  } catch (error) {
+        // On recupere la position
+        const response = await axios.get(`http://localhost:8080/api/hashtags/${req.params.id}/position/${req.params.word}`);
+        res.json(response.data);
+    } catch (error) {
 
-    console.error(`Erreur pendant la recherche de position du mot ${req.params.word}:`, error);
-    res.status(error.response?.status || 500).json({ message: 'Erreur serveur' });
-  }
+        console.error(`Erreur pendant la recherche de position du mot ${req.params.word}:`, error);
+        res.status(error.response?.status || 500).json({ message: 'Erreur serveur' });
+    }
 });
 
 //////////////////////////////////////////

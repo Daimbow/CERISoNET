@@ -1,11 +1,16 @@
 <div class="notifications-container">
-    <div *ngFor="let notification of notifications" 
-         class="notification-item" 
-         [ngClass]="'notification-' + notification.type">
-      <div class="notification-content">
-        <span class="notification-message">{{ notification.message }}</span>
-        <span class="notification-time">{{ formatTime(notification.timestamp) }}</span>
-      </div>
-      <button class="notification-close" (click)="removeNotification(notification.id)">×</button>
+
+    <!-- On boucle pour afficher les notifications-->
+    <div *ngFor="let notification of notifications" class="notification-item"
+        [ngClass]="'notification-' + notification.type">
+
+        <!-- On choisis le type de notif erreur ou succès  -->
+        <div class="notification-content">
+            <span class="notification-message">{{ notification.message }}</span>
+            <span class="notification-time">{{ formatTime(notification.timestamp) }}</span>
+        </div>
+
+        <!-- remove notif bouton  -->
+        <button class="notification-close" (click)="removeNotification(notification.id)">×</button>
     </div>
-  </div>
+</div>

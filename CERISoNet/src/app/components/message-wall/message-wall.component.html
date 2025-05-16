@@ -1,201 +1,200 @@
 <div class="container mt-4">
+
     <!-- Filtres et tri -->
     <div class="card shadow-sm mb-4">
-      <div class="card-header bg-white">
-        <h5 class="card-title mb-0">Filtres et tri</h5>
-      </div>
-      <div class="card-body">
-        <div class="row g-3">
-          <!-- Tri des messages -->
-          <div class="col-md-6 col-lg-4">
-            <label for="sortSelect" class="form-label">Trier par</label>
-            <select id="sortSelect" class="form-select" [(ngModel)]="selectedSort" (change)="applySort()">
-              <option *ngFor="let option of sortOptions" [value]="option.value">{{ option.label }}</option>
-            </select>
-          </div>
-          
-          <!-- Filtre par propriétaire -->
-          <div class="col-md-6 col-lg-4">
-            <label for="ownerSelect" class="form-label">Afficher</label>
-            <select id="ownerSelect" class="form-select" [(ngModel)]="selectedOwner" (change)="applyOwnerFilter()">
-              <option [ngValue]="option.value" *ngFor="let option of ownerOptions">{{ option.label }}</option>
-            </select>
-          </div>
-          
-          <!-- Filtre par hashtag -->
-          <div class="col-md-12 col-lg-4">
-            <label for="hashtagInput" class="form-label">Filtrer par hashtag</label>
-            <div class="input-group">
-              <input type="text" id="hashtagInput" class="form-control" placeholder="ex: #angular" 
-                [(ngModel)]="hashtagFilter" (keyup.enter)="applyHashtagFilter()">
-              <button class="btn btn-primary" type="button" (click)="applyHashtagFilter()">Filtrer</button>
-              <button *ngIf="hashtagFilter" class="btn btn-outline-secondary" type="button" 
-                (click)="clearHashtagFilter()">
-                <i class="bi bi-x"></i>
-              </button>
-            </div>
-          </div>
+        <div class="card-header bg-white">
+            <h5 class="card-title mb-0">Filtres et tri</h5>
         </div>
-      </div>
+        <div class="card-body">
+            <div class="row g-3">
+
+                <!-- Tri des messages -->
+                <div class="col-md-6 col-lg-4">
+                    <label for="sortSelect" class="form-label">Trier par</label>
+                    <select id="sortSelect" class="form-select" [(ngModel)]="selectedSort" (change)="applySort()">
+                        <option *ngFor="let option of sortOptions" [value]="option.value">{{ option.label }}</option>
+                    </select>
+                </div>
+
+                <!-- Filtre par propriétaire -->
+                <div class="col-md-6 col-lg-4">
+                    <label for="ownerSelect" class="form-label">Afficher</label>
+                    <select id="ownerSelect" class="form-select" [(ngModel)]="selectedOwner"
+                        (change)="applyOwnerFilter()">
+                        <option [ngValue]="option.value" *ngFor="let option of ownerOptions">{{ option.label }}</option>
+                    </select>
+                </div>
+
+                <!-- Filtre par hashtag -->
+                <div class="col-md-12 col-lg-4">
+                    <label for="hashtagInput" class="form-label">Filtrer par hashtag</label>
+                    <div class="input-group">
+                        <input type="text" id="hashtagInput" class="form-control" placeholder="ex: #angular"
+                            [(ngModel)]="hashtagFilter" (keyup.enter)="applyHashtagFilter()">
+                        <button class="btn btn-primary" type="button" (click)="applyHashtagFilter()">Filtrer</button>
+                        <button *ngIf="hashtagFilter" class="btn btn-outline-secondary" type="button"
+                            (click)="clearHashtagFilter()">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  
+
     <!-- Indicateur de chargement -->
     <div *ngIf="isLoading" class="d-flex justify-content-center my-4">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Chargement...</span>
-      </div>
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Chargement...</span>
+        </div>
     </div>
-  
+
     <!-- Message si aucun message trouvé -->
     <div *ngIf="!isLoading && messages.length === 0" class="alert alert-info">
-      Aucun message à afficher. Ajustez vos filtres ou revenez plus tard.
+        Aucun message à afficher. Ajustez vos filtres ou revenez plus tard.
     </div>
-  
+
     <!-- Liste des messages -->
     <div *ngIf="!isLoading && messages.length > 0">
-      <!-- Carte pour chaque message -->
-      <div class="card shadow-sm mb-3" *ngFor="let message of messages">
-        <!-- En-tête du message -->
-        <div class="card-header bg-white d-flex justify-content-between align-items-center">
-          <div class="d-flex align-items-center">
-            <img *ngIf="message.authorAvatar" [src]="message.authorAvatar" class="rounded-circle me-2" 
-              width="32" height="32" alt="Avatar">
-            <div>
-              <strong>{{ message.authorPseudo || 'Utilisateur' }}</strong>
-              <small class="text-muted ms-2">{{ formatDateTime(message.date, message.hour) }}</small>
-            </div>
-          </div>
-          <!-- Indicateur de partage -->
-          <div *ngIf="message.shared" class="badge bg-secondary">
-            <i class="bi bi-share-fill me-1"></i> Message partagé
-          </div>
-        </div>
-        
-        <!-- Corps du message -->
-        <div class="card-body">
-          <!-- Contenu du message -->
-          <p class="card-text" [innerHTML]="formatMessageBody(message.body)"></p>
-          
-          <div *ngIf="message.hashtags && message.hashtags.length > 0" class="mt-2 mb-3">
-            <span *ngFor="let tag of message.hashtags" 
-                  class="badge bg-primary text-white rounded-pill px-2 py-1 me-1 cursor-pointer"
-                  (click)="setHashtagFilter(tag)">
-              {{ tag }}
-            </span>
-          </div>
-          
-          <!-- Image du message si présente -->
-          <div *ngIf="message.image?.url" class="text-center mb-3">
-            <img [src]="message.image.url" [alt]="message.image.title || 'Image du message'" 
-              class="img-fluid rounded" style="max-height: 300px;">
-            <p *ngIf="message.image.title" class="text-muted mt-1">{{ message.image.title }}</p>
-          </div>
-          
-          <!-- Affichage du message partagé original -->
-          <div *ngIf="message.sharedMessage" class="border rounded p-3 mb-3 bg-light">
-            <div class="d-flex align-items-center mb-2">
-              <img *ngIf="message.sharedMessage.authorAvatar" [src]="message.sharedMessage.authorAvatar" 
-                class="rounded-circle me-2" width="24" height="24" alt="Avatar">
-              <strong class="small">{{ message.sharedMessage.authorPseudo || 'Utilisateur' }}</strong>
-              <small class="text-muted ms-2">
-                {{ formatDateTime(message.sharedMessage.date, message.sharedMessage.hour) }}
-              </small>
-            </div>
-            <p class="card-text small" [innerHTML]="formatMessageBody(message.sharedMessage.body)"></p>
-            <div *ngIf="message.sharedMessage.image?.url" class="text-center">
-              <img [src]="message.sharedMessage.image.url" 
-                [alt]="message.sharedMessage.image.title || 'Image du message partagé'" 
-                class="img-fluid rounded" style="max-height: 200px;">
-            </div>
-          </div>
-          
-          <!-- Compteurs (likes, commentaires) -->
-          <div class="d-flex justify-content-between text-muted small mb-2">
-            <span>
-              <i class="bi bi-heart-fill me-1" [class.text-danger]="message.isLikedByCurrentUser"></i>
-              {{ message.likes || 0 }} j'aime
-            </span>
-            <span (click)="toggleMessageExpand(message._id)" style="cursor: pointer;">
-              {{ message.comments?.length || 0 }} commentaire(s)
-            </span>
-          </div>
-          
-          <!-- Actions (like, commentaire, partage) -->
-          <div class="d-flex justify-content-between border-top border-bottom py-2 mb-3">
-            <button class="btn btn-sm" 
-              [class.btn-outline-danger]="message.isLikedByCurrentUser"
-              [class.btn-outline-secondary]="!message.isLikedByCurrentUser"
-              [disabled]="processingLike.includes(message._id)"
-              (click)="likeMessage(message._id)">
-              <i class="bi" [class.bi-heart-fill]="message.isLikedByCurrentUser" [class.bi-heart]="!message.isLikedByCurrentUser"></i> 
-              J'aime
-            </button>
-            
-            <button class="btn btn-sm btn-outline-secondary" (click)="toggleMessageExpand(message._id)">
-              <i class="bi bi-chat"></i> Commenter
-            </button>
-            
-            <button class="btn btn-sm btn-outline-secondary" 
-              [disabled]="processingShare.includes(message._id)"
-              (click)="toggleShareForm(message._id)">
-              <i class="bi bi-share"></i> Partager
-            </button>
-          </div>
-          
-          <!-- Formulaire de partage -->
-          <div *ngIf="showShareForm[message._id]" class="mb-3">
-            <div class="input-group">
-              <input type="text" class="form-control" placeholder="Ajouter un commentaire au partage..." 
-                [(ngModel)]="shareInput[message._id]">
-              <button class="btn btn-primary" type="button" (click)="shareMessage(message._id)">
-                <i class="bi bi-share"></i> Partager
-              </button>
-            </div>
-          </div>
-          
-          <!-- Section commentaires (affichée si message expanded) -->
-          <div *ngIf="expandedMessageId === message._id">
-            <!-- Commentaires existants -->
-            <div *ngIf="message.comments?.length" class="mb-3">
-              <div *ngFor="let comment of message.comments" class="d-flex mb-2">
-                <img *ngIf="comment.authorAvatar" [src]="comment.authorAvatar" 
-                  class="rounded-circle me-2 align-self-start" width="24" height="24" alt="Avatar">
-                <div class="flex-grow-1 p-2 bg-light rounded">
-                  <div class="d-flex justify-content-between">
-                    <strong class="small">{{ comment.authorPseudo || 'Utilisateur' }}</strong>
-                    <small class="text-muted">{{ formatDateTime(comment.date, comment.hour) }}</small>
-                  </div>
-                  <p class="mb-0 small">{{ comment.text }}</p>
+
+        <!-- Carte pour chaque message -->
+        <div class="card shadow-sm mb-3" *ngFor="let message of messages">
+
+            <!-- En-tête du message -->
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <img *ngIf="message.authorAvatar" [src]="message.authorAvatar" class="rounded-circle me-2"
+                        width="32" height="32" alt="Avatar">
+                    <div>
+                        <strong>{{ message.authorPseudo || 'Utilisateur' }}</strong>
+                        <small class="text-muted ms-2">{{ formatDateTime(message.date, message.hour) }}</small>
+                    </div>
                 </div>
-              </div>
+
+                <!-- Indicateur de partage -->
+                <div *ngIf="message.shared" class="badge bg-secondary">
+                    <i class="bi bi-share-fill me-1"></i> Message partagé
+                </div>
             </div>
-            
-            <!-- Formulaire pour ajouter un commentaire -->
-            <div class="input-group">
-              <input type="text" class="form-control" placeholder="Écrire un commentaire..." 
-                [(ngModel)]="commentInput[message._id]" (keyup.enter)="commentMessage(message._id)">
-              <button class="btn btn-primary" type="button" 
-                [disabled]="!commentInput[message._id]?.trim() || processingComment.includes(message._id)"
-                (click)="commentMessage(message._id)">
-                <i class="bi bi-send"></i>
-              </button>
+
+            <!-- Corps du message -->
+            <div class="card-body">
+
+                <!-- Contenu du message -->
+                <p class="card-text" [innerHTML]="formatMessageBody(message.body)"></p>
+
+                <div *ngIf="message.hashtags && message.hashtags.length > 0" class="mt-2 mb-3">
+                    <span *ngFor="let tag of message.hashtags"
+                        class="badge bg-primary text-white rounded-pill px-2 py-1 me-1 cursor-pointer"
+                        (click)="setHashtagFilter(tag)">
+                        {{ tag }}
+                    </span>
+                </div>
+
+                <!-- Image du message si existant -->
+                <div *ngIf="message.image?.url" class="text-center mb-3">
+                    <img [src]="message.image.url" [alt]="message.image.title || 'Image du message'"
+                        class="img-fluid rounded" style="max-height: 300px;">
+                    <p *ngIf="message.image.title" class="text-muted mt-1">{{ message.image.title }}</p>
+                </div>
+
+                <!-- Affichage du message partagé original -->
+                <div *ngIf="message.sharedMessage" class="border rounded p-3 mb-3 bg-light">
+                    <div class="d-flex align-items-center mb-2">
+                        <img *ngIf="message.sharedMessage.authorAvatar" [src]="message.sharedMessage.authorAvatar"
+                            class="rounded-circle me-2" width="24" height="24" alt="Avatar">
+                        <strong class="small">{{ message.sharedMessage.authorPseudo || 'Utilisateur' }}</strong>
+                        <small class="text-muted ms-2">
+                            {{ formatDateTime(message.sharedMessage.date, message.sharedMessage.hour) }}
+                        </small>
+                    </div>
+                    <p class="card-text small" [innerHTML]="formatMessageBody(message.sharedMessage.body)"></p>
+                    <div *ngIf="message.sharedMessage.image?.url" class="text-center">
+                        <img [src]="message.sharedMessage.image.url"
+                            [alt]="message.sharedMessage.image.title || 'Image du message partagé'"
+                            class="img-fluid rounded" style="max-height: 200px;">
+                    </div>
+                </div>
+
+                <!-- Compteurs (likes, commentaires) -->
+                <div class="d-flex justify-content-between text-muted small mb-2">
+                    <span>
+                        <i class="bi bi-heart-fill me-1" [class.text-danger]="message.isLikedByCurrentUser"></i>
+                        {{ message.likes || 0 }} j'aime
+                    </span>
+                    <span (click)="toggleMessageExpand(message._id)" style="cursor: pointer;">
+                        {{ message.comments?.length || 0 }} commentaire(s)
+                    </span>
+                </div>
+
+                <!-- Actions (like, commentaire, partage) -->
+                <div class="d-flex justify-content-between border-top border-bottom py-2 mb-3">
+                    <button class="btn btn-sm" [class.btn-outline-danger]="message.isLikedByCurrentUser"
+                        [class.btn-outline-secondary]="!message.isLikedByCurrentUser"
+                        [disabled]="processingLike.includes(message._id)" (click)="likeMessage(message._id)">
+                        <i class="bi" [class.bi-heart-fill]="message.isLikedByCurrentUser"
+                            [class.bi-heart]="!message.isLikedByCurrentUser"></i>
+                        J'aime
+                    </button>
+
+                    <button class="btn btn-sm btn-outline-secondary" (click)="toggleMessageExpand(message._id)">
+                        <i class="bi bi-chat"></i> Commenter
+                    </button>
+
+                    <button class="btn btn-sm btn-outline-secondary" [disabled]="processingShare.includes(message._id)"
+                        (click)="toggleShareForm(message._id)">
+                        <i class="bi bi-share"></i> Partager
+                    </button>
+                </div>
+
+                <!-- Formulaire de partage -->
+                <div *ngIf="showShareForm[message._id]" class="mb-3">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Ajouter un commentaire au partage..."
+                            [(ngModel)]="shareInput[message._id]">
+                        <button class="btn btn-primary" type="button" (click)="shareMessage(message._id)">
+                            <i class="bi bi-share"></i> Partager
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Section commentaires (affichée si message expanded) -->
+                <div *ngIf="expandedMessageId === message._id">
+                    <!-- Commentaires existants -->
+                    <div *ngIf="message.comments?.length" class="mb-3">
+                        <div *ngFor="let comment of message.comments" class="d-flex mb-2">
+                            <img *ngIf="comment.authorAvatar" [src]="comment.authorAvatar"
+                                class="rounded-circle me-2 align-self-start" width="24" height="24" alt="Avatar">
+                            <div class="flex-grow-1 p-2 bg-light rounded">
+                                <div class="d-flex justify-content-between">
+                                    <strong class="small">{{ comment.authorPseudo || 'Utilisateur' }}</strong>
+                                    <small class="text-muted">{{ formatDateTime(comment.date, comment.hour) }}</small>
+                                </div>
+                                <p class="mb-0 small">{{ comment.text }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Formulaire pour ajouter un commentaire -->
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Écrire un commentaire..."
+                            [(ngModel)]="commentInput[message._id]" (keyup.enter)="commentMessage(message._id)">
+                        <button class="btn btn-primary" type="button"
+                            [disabled]="!commentInput[message._id]?.trim() || processingComment.includes(message._id)"
+                            (click)="commentMessage(message._id)">
+                            <i class="bi bi-send"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
-      </div>
-  
-      <!-- Pagination -->
-      <div class="d-flex justify-content-center mt-4 mb-5">
-        <ngb-pagination
-          [collectionSize]="totalMessages"
-          [(page)]="currentPage"
-          [pageSize]="pageSize"
-          [maxSize]="5"
-          [rotate]="true"
-          [boundaryLinks]="true"
-          (pageChange)="onPageChange($event)"
-          aria-label="Navigation des pages de messages">
-        </ngb-pagination>
-      </div>
+
+        <!-- Pagination -->
+        <div class="d-flex justify-content-center mt-4 mb-5">
+            <ngb-pagination [collectionSize]="totalMessages" [(page)]="currentPage" [pageSize]="pageSize" [maxSize]="5"
+                [rotate]="true" [boundaryLinks]="true" (pageChange)="onPageChange($event)"
+                aria-label="Navigation des pages de messages">
+            </ngb-pagination>
+        </div>
     </div>
-  </div>
+</div>
